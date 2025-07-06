@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hafıza Kart Oyunu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .game-board {
+      width: 440px;
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 10px;
+    }
+
+    .card {
+      width: 100px;
+      height: 100px;
+      background: #2c3e50;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      border-radius: 8px;
+      position: relative;
+      perspective: 1000px;
+    }
+
+    .card.flip .front {
+      transform: rotateY(180deg);
+    }
+
+    .card.flip .back {
+      transform: rotateY(0);
+    }
+
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.4s;
+    }
+
+    .front {
+      background: #2c3e50;
+      transform: rotateY(0);
+    }
+
+    .back {
+      background: #3498db;
+      transform: rotateY(180deg);
+    }
+  </style>
+</head>
+<body>
+
+<div class="game-board" id="gameBoard"></div>
+
+<script>
+  const emojis = ['🐶','🐱','🐭','🐹','🦊','🐻'];
+  let cards = [...emojis, ...emojis];
+  cards = cards.sort(() => 0.5 - Math.random());
+
+  const gameBoard = document.getElementById("gameBoard");
+
+  let firstCard = null;
+  let lockBoard = false;
+
+  cards.forEach(emoji => {
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    card.innerHTML = `
+      <div class="front">❓</div>
+      <div class="back">${emoji}</div>
+    `;
+
+    card.addEventListener('click', () => {
+      if (lockBoard || card.classList.contains('flip')) return;
+
+      card.classList.add('flip');
+
+      if (!firstCard) {
+        firstCard = card;
+      } else {
+        const secondCard = card;
+        const firstEmoji = firstCard.querySelector('.back').textContent;
+        const secondEmoji = secondCard.querySelector('.back').textContent;
+
+        if (firstEmoji === secondEmoji) {
+          firstCard = null;
+        } else {
+          lockBoard = true;
+          setTimeout(() => {
+            firstCard.classList.remove('flip');
+            secondCard.classList.remove('flip');
+            firstCard = null;
+            lockBoard = false;
+          }, 1000);
+        }
+      }
+    });
+
+    gameBoard.appendChild(card);
+  });
+</script>
+
+</body>
+</html>
