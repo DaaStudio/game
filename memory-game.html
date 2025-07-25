@@ -58,6 +58,15 @@
     position: relative;
     transition: background 0.3s;
   }
+  /* YENİ: Sol üst butonlar için container */
+  .top-left-buttons {
+    position: absolute;
+    top: 10px;
+    left: 16px;
+    display: flex;
+    gap: 8px;
+    z-index: 10;
+  }
   .top-buttons {
     position: absolute;
     top: 10px;
@@ -65,6 +74,21 @@
     display: flex;
     gap: 8px;
     z-index: 10;
+  }
+  /* YENİ: Menü butonu stili */
+  #menu-btn {
+    background: var(--button-bg);
+    color: var(--text-color);
+    border: none;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
   }
   #sound-toggle, #restart-btn, #theme-toggle {
     background: var(--button-bg);
@@ -84,8 +108,13 @@
     background: #4caf50;
     color: #fff;
   }
-  #restart-btn:hover, #theme-toggle:hover {
+  /* YENİ: Menü butonu için hover efekti */
+  #restart-btn:hover, #theme-toggle:hover, #menu-btn:hover {
     background: var(--button-hover-bg);
+  }
+  /* YENİ: Başlığın butonların altına girmemesi için padding */
+  .game-container h1 {
+    padding: 0 50px;
   }
   .energy-bar {
     display: flex;
@@ -319,6 +348,10 @@
   </div>
 
   <div class="game-container">
+    <div class="top-left-buttons">
+        <button id="menu-btn" title="Menü">☰</button>
+    </div>
+
     <div class="top-buttons">
       <button id="theme-toggle" title="Tema Değiştir">🌙</button>
       <button id="sound-toggle" title="Ses Aç/Kapat">🔊</button>
@@ -354,8 +387,8 @@ const START_PAIRS = 6;
 const PAIR_INCREMENT = 1;
 const ENERGY_START_LEVEL = 5;
 const ENERGY_MAX = 3;
-const ENERGY_BASE_LIMIT = 25; // 5. bölüm için temel süre
-const ENERGY_INC_PER_LEVEL = 7; // Sonraki her bölüm için eklenecek süre
+const ENERGY_BASE_LIMIT = 25;
+const ENERGY_INC_PER_LEVEL = 7;
 const ENERGY_STORAGE_KEY = 'memoryGameEnergy';
 const ENERGY_LAST_LEVEL_KEY = 'memoryGameEnergyLevel';
 const emojis = [
@@ -372,8 +405,9 @@ let bestMoves = JSON.parse(localStorage.getItem('memoryGameBestMoves') || '{}');
 let firstCard = null, secondCard = null, lockBoard = false, matchedPairs = 0;
 let soundOn = JSON.parse(localStorage.getItem('memoryGameSoundOn') || 'true');
 let energy = ENERGY_MAX;
-let energyCheckMultiplier = 1; // **YENİ:** Enerji kontrolü için çarpan (25sn, 50sn, 75sn...)
+let energyCheckMultiplier = 1;
 let energyRestoreCallback = null;
+let isPaused = false; // YENİ: Oyunun duraklatılma durumunu tutar
 
 // --- ELEMENTLER ---
 const board = document.getElementById('game-board');
@@ -390,6 +424,7 @@ const audioMatch = document.getElementById('audio-match');
 const audioWrong = document.getElementById('audio-wrong');
 const audioLevel = document.getElementById('audio-level');
 const energyBar = document.getElementById('energy-bar');
+const menuBtn = document.getElementById('menu-btn'); // YENİ: Menü butonu elementi
 
 // --- TEMA DEĞİŞTİRME FONKSİYONLARI ---
 function applyTheme(theme) {
@@ -435,6 +470,38 @@ soundToggle.onclick = function() {
   localStorage.setItem('memoryGameSoundOn', JSON.stringify(soundOn));
   updateSoundButton();
 };
+
+// YENİ: Oyunu duraklatma fonksiyonu
+function pauseGame() {
+    if (timerInterval) { // Sadece zamanlayıcı çalışıyorsa duraklat
+        clearInterval(timerInterval);
+        timerInterval = null; // Duraklatıldığını belirtmek için null yap
+        lockBoard = true; // Kartlara tıklamayı engelle
+        isPaused = true;
+    }
+}
+
+// YENİ: Oyunu devam ettirme fonksiyonu
+function resumeGame() {
+    if (isPaused) {
+        hideModal(); // "Devam Et" penceresini gizle
+        lockBoard = false; // Kartlara tıklamayı tekrar aç
+        isPaused = false;
+        resumeTimer(); // Zamanlayıcıyı kaldığı yerden devam ettir
+    }
+}
+
+// YENİ: "Oyuna Devam Et" penceresini gösterme fonksiyonu
+function showResumeModal() {
+    showModal(
+        'Oyun Duraklatıldı',
+        'Oyuna geri döndün. Hazır olduğunda devam et.',
+        'Oyuna Devam Et',
+        resumeGame, // Butona basınca oyunu devam ettir
+        null,
+        null
+    );
+}
 
 // --- ENERJİ YÖNETİMİ ---
 function loadEnergy(level) {
@@ -499,7 +566,6 @@ function restoreEnergyAndContinue(showText) {
     energyRestoreCallback();
     energyRestoreCallback = null;
   }
-  // **DEĞİŞİKLİK:** Zamanlayıcıyı kaldığı yerden devam ettir.
   resumeTimer();
 }
 
@@ -554,7 +620,7 @@ function startGame(level) {
   renderLevelButtons();
   resetGame();
   createBoard();
-  startTimer(); // Oyuna başlarken timer sıfırlanır
+  startTimer();
   updateBestTime();
   updateScoreHistory();
   messageDiv.textContent = '';
@@ -567,9 +633,10 @@ function startGame(level) {
 }
 function resetGame() {
   clearInterval(timerInterval);
+  isPaused = false; // YENİ: Yeni oyunda duraklatma durumunu sıfırla
   timer = 0;
   moves = 0;
-  energyCheckMultiplier = 1; // **YENİ:** Her yeni bölümde çarpanı sıfırla
+  energyCheckMultiplier = 1;
   timerSpan.textContent = 'Süre: 0 sn';
   movesSpan.textContent = 'Hamle: 0';
   firstCard = null;
@@ -596,7 +663,7 @@ function createBoard() {
   });
 }
 function onCardClick(e) {
-  if (lockBoard) return;
+  if (lockBoard || isPaused) return; // YENİ: Oyun duraklatıldıysa tıklamayı engelle
   const card = e.currentTarget;
   if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
   card.classList.add('flipped');
@@ -636,26 +703,20 @@ function resetFlipped() {
   secondCard = null;
   lockBoard = false;
 }
-// **DEĞİŞİKLİK:** Fonksiyon artık sadece mevcut bölümün TEMEL limitini döndürüyor.
 function getEnergyLimit(level) {
   if (level < ENERGY_START_LEVEL) return null;
-  // Level 5 için 25, Level 6 için 25+7=32, Level 7 için 32+7=39...
   return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
 }
-
-// **DEĞİŞİKLİK:** Zamanlayıcı mantığı güncellendi
 function startTimer() {
   clearInterval(timerInterval);
-  timer = 0; // Sadece burada sıfırlanır
+  timer = 0;
   timerSpan.textContent = 'Süre: 0 sn';
   runTimer();
 }
-
 function resumeTimer() {
-  clearInterval(timerInterval); // Güvenlik için önce durdur
-  runTimer(); // Kaldığı yerden devam ettir
+  clearInterval(timerInterval);
+  runTimer();
 }
-
 function runTimer() {
     timerInterval = setInterval(() => {
         timer++;
@@ -663,21 +724,17 @@ function runTimer() {
         checkEnergyTimeout();
     }, 1000);
 }
-
-// **DEĞİŞİKLİK:** Enerji kontrol mantığı güncellendi
 function checkEnergyTimeout() {
   if (currentLevel < ENERGY_START_LEVEL) return;
   const limit = getEnergyLimit(currentLevel);
-  // Mevcut hedef süre = temel limit * çarpan (örn: 25 * 1, 25 * 2...)
   const currentTargetTime = limit * energyCheckMultiplier;
 
   if (timer >= currentTargetTime) {
-    clearInterval(timerInterval); // Zamanlayıcıyı durdur
-
+    clearInterval(timerInterval);
     if (energy > 0) {
-      showEnergyUseModal(); // Enerji varsa sor
+      showEnergyUseModal();
     } else {
-      showOutOfEnergyModal(); // Enerji bittiyse reklam göster
+      showOutOfEnergyModal();
     }
   }
 }
@@ -761,16 +818,15 @@ function hideModal() {
 }
 
 // --- GÜNCELLENMİŞ ENERJİ AKIŞI FONKSİYONLARI ---
-// **DEĞİŞİKLİK:** Enerji kullanma mantığı güncellendi
 function showEnergyUseModal() {
   const limit = getEnergyLimit(currentLevel);
   showModal('Enerjin tükeniyor!', `Bu bölümü ${limit * energyCheckMultiplier} sn içinde bitirmen gerekiyordu.<br>Devam etmek için 1 enerji kullanılsın mı? <br><br><b>Kalan Enerji: ${energy}</b>`, 'Evet, Kullan',
     () => {
       energy--;
-      energyCheckMultiplier++; // Bir sonraki kontrol hedefini ayarla (örn: 50sn'den 75sn'ye)
+      energyCheckMultiplier++;
       saveEnergy();
       updateEnergyBar();
-      resumeTimer(); // Zamanı devam ettir
+      resumeTimer();
       hideModal();
     },
     'Hayır',
@@ -789,37 +845,21 @@ function showEnergyUseModal() {
     }
   );
 }
-
-
-
-// **DEĞİŞİKLİK:** Enerji tamamen bittiğindeki akış
-// ENERJİ TAMAMEN BİTTİĞİNDEKİ AKIŞ (DÜZELTİLMİŞ HALİ)
 function showOutOfEnergyModal() {
     showModal(
         'Enerji Bitti',
         'Enerjin tükendi. Devam etmek için reklam izleyebilir veya bölümü yeniden başlatabilirsin.',
         'Reklam İzle (Enerji Doldur)',
         () => {
-            // Önceki modalı gizle
             hideModal();
-
-            // Yeni pencerede reklam sayfasını aç
             const adWindow = window.open('reklamizlendi.html', '_blank');
-
-            // Reklamın izlendiğini varsayarak 3 saniye sonra oyuna dön
             setTimeout(() => {
-                // Reklam penceresi hala açıksa kapat (isteğe bağlı)
                 if (adWindow && !adWindow.closed) {
                     adWindow.close();
                 }
-
-                // Reklamı bir enerji kullanımı gibi sayıp zamanlayıcının bir sonraki hedefe geçmesini sağla
-                energyCheckMultiplier++; 
-                
-                // Enerjiyi doldur ve zamanı kaldığı yerden devam ettir
-                restoreEnergyAndContinue(true); 
-
-            }, 3000); // 3 saniye bekleme süresi
+                energyCheckMultiplier++;
+                restoreEnergyAndContinue(true);
+            }, 3000);
         },
         'Yeniden Başlat',
         () => {
@@ -843,9 +883,6 @@ function showOutOfEnergyModal() {
     );
 }
 
-
-
-
 // --- OYUNU BAŞLATMA ---
 document.addEventListener('DOMContentLoaded', () => {
   const savedTheme = localStorage.getItem('memoryGameTheme') || 'light';
@@ -856,12 +893,28 @@ document.addEventListener('DOMContentLoaded', () => {
   setupToggles();
   renderLevelButtons();
   updateScoreHistory();
+  
   const startModal = document.getElementById('start-modal');
   const startGameBtn = document.getElementById('start-game-btn');
+  
   startGameBtn.onclick = () => {
     startModal.classList.remove('visible');
     startGame(1);
   };
+
+  // YENİ: Menü butonu tıklama olayı
+  menuBtn.onclick = function() {
+    pauseGame(); // Oyunu duraklat
+    window.open('menu.html', '_blank'); // Menüyü yeni sekmede aç
+  };
+
+  // YENİ: Sekme görünürlüğü değiştiğinde olayı dinle
+  document.addEventListener('visibilitychange', () => {
+    // Eğer sekme görünür hale geldiyse VE oyun duraklatılmış durumdaysa
+    if (document.visibilityState === 'visible' && isPaused) {
+        showResumeModal(); // "Devam Et" penceresini göster
+    }
+  });
 });
   </script>
 </body>
