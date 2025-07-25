@@ -5,21 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hafıza Kart Oyunu</title>
   <style>
+  :root {
+    --bg-main: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
+    --bg-container: #fff;
+    --text-color: #333;
+    --header-bg: #e0e0e0;
+    --header-hover-bg: #b2dfdb;
+    --button-bg: #e0e0e0;
+    --button-hover-bg: #ffd54f;
+    --card-bg: #b2dfdb;
+    --card-flipped-bg: #fffde7;
+    --card-matched-bg: #ffd54f;
+    --shadow-color: rgba(0,0,0,0.13);
+    --modal-bg: #fff;
+    --modal-text: #333;
+    --locked-bg: #bdbdbd;
+  }
+
+  body.dark-mode {
+    --bg-main: #121212;
+    --bg-container: #1e1e1e;
+    --text-color: #e0e0e0;
+    --header-bg: #333;
+    --header-hover-bg: #424242;
+    --button-bg: #424242;
+    --button-hover-bg: #555;
+    --card-bg: #2c3e50;
+    --card-flipped-bg: #4a6fa5;
+    --card-matched-bg: #f39c12;
+    --shadow-color: rgba(0,0,0,0.5);
+    --modal-bg: #2a2a2a;
+    --modal-text: #e0e0e0;
+    --locked-bg: #555;
+  }
+
   body {
-    background: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
+    background: var(--bg-main);
+    color: var(--text-color);
     font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
+    transition: background 0.3s, color 0.3s;
   }
   .game-container {
     max-width: 440px;
     margin: 32px auto;
-    background: #fff;
+    background: var(--bg-container);
     border-radius: 16px;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+    box-shadow: 0 2px 16px var(--shadow-color);
     padding: 18px 8px 28px 8px;
     text-align: center;
     position: relative;
+    transition: background 0.3s;
   }
   .top-buttons {
     position: absolute;
@@ -29,8 +66,9 @@
     gap: 8px;
     z-index: 10;
   }
-  #sound-toggle, #restart-btn {
-    background: #e0e0e0;
+  #sound-toggle, #restart-btn, #theme-toggle {
+    background: var(--button-bg);
+    color: var(--text-color);
     border: none;
     border-radius: 50%;
     width: 38px;
@@ -40,14 +78,14 @@
     justify-content: center;
     font-size: 1.3em;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
   }
   #sound-toggle.active {
     background: #4caf50;
     color: #fff;
   }
-  #restart-btn:hover {
-    background: #ffd54f;
+  #restart-btn:hover, #theme-toggle:hover {
+    background: var(--button-hover-bg);
   }
   .energy-bar {
     display: flex;
@@ -77,7 +115,7 @@
   .toggle-header {
     font-weight: bold;
     font-size: 1.08rem;
-    background: #e0e0e0;
+    background: var(--header-bg);
     border-radius: 7px;
     margin: 8px 0 2px 0;
     padding: 7px 0 7px 0;
@@ -90,7 +128,7 @@
     gap: 8px;
   }
   .toggle-header:hover {
-    background: #b2dfdb;
+    background: var(--header-hover-bg);
   }
   .toggle-arrow {
     font-size: 1.1em;
@@ -119,7 +157,8 @@
     padding: 7px 13px;
     border: none;
     border-radius: 6px;
-    background: #e0e0e0;
+    background: var(--button-bg);
+    color: var(--text-color);
     font-size: 1rem;
     cursor: pointer;
     transition: background 0.2s;
@@ -130,7 +169,7 @@
     color: #fff;
   }
   #level-select button.locked {
-    background: #bdbdbd;
+    background: var(--locked-bg);
     color: #fff;
     cursor: not-allowed;
   }
@@ -152,7 +191,7 @@
     margin: 16px 0 10px 0;
   }
   .card {
-    background: #b2dfdb;
+    background: var(--card-bg);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -163,13 +202,14 @@
     transition: background 0.2s, transform 0.2s;
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   }
-  .card.flipped, .card.matched {
-    background: #fffde7;
+  .card.flipped {
+    background: var(--card-flipped-bg);
     cursor: default;
     transform: scale(1.08);
   }
   .card.matched {
-    background: #ffd54f;
+    background: var(--card-matched-bg);
+    transform: scale(1.08);
   }
   #message {
     margin-top: 16px;
@@ -180,7 +220,7 @@
   #score-history {
     margin: 10px 0 0 0;
     font-size: 0.98rem;
-    color: #333;
+    color: var(--text-color);
   }
   #score-history ul {
     list-style: none;
@@ -195,17 +235,21 @@
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.35);
-    display: flex;
+    display: none; /* Varsayılan olarak gizli */
     align-items: center;
     justify-content: center;
     z-index: 1000;
     animation: fadeIn 0.3s;
   }
+  .modal.visible {
+    display: flex; /* Görünür yapmak için */
+  }
   @keyframes fadeIn {
     from { opacity: 0; } to { opacity: 1; }
   }
   .modal-content {
-    background: #fff;
+    background: var(--modal-bg);
+    color: var(--modal-text);
     border-radius: 16px;
     box-shadow: 0 2px 24px rgba(0,0,0,0.18);
     padding: 32px 24px 24px 24px;
@@ -214,6 +258,7 @@
     text-align: center;
     position: relative;
     animation: popIn 0.3s;
+    transition: background 0.3s, color 0.3s;
   }
   @keyframes popIn {
     from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; }
@@ -265,11 +310,21 @@
   </style>
 </head>
 <body>
+
+  <div id="start-modal" class="modal visible">
+    <div class="modal-content">
+      <h2>Hafıza Oyununa Hoş Geldin!</h2>
+      <button id="start-game-btn" class="modal-btn">Oyunu Başlat</button>
+    </div>
+  </div>
+
   <div class="game-container">
     <div class="top-buttons">
+      <button id="theme-toggle" title="Tema Değiştir">🌙</button>
       <button id="sound-toggle" title="Ses Aç/Kapat">🔊</button>
       <button id="restart-btn" title="Bölümü Yeniden Başlat">⟳</button>
     </div>
+
     <h1>Hafıza Kart Oyunu</h1>
     <div class="energy-bar" id="energy-bar" style="display:none;"></div>
     <div class="toggle-header" id="toggle-levels-header"><span class="toggle-arrow">▶</span> Bölümler</div>
@@ -288,18 +343,19 @@
       <div id="score-history"></div>
     </div>
   </div>
-  <!-- Sesler -->
   <audio id="audio-match" src="bulundu.mp3" preload="auto"></audio>
-  <audio id="audio-wrong" src="hata.mp3" preload="auto"></audio>
+  <audio id="audio-wrong"src="hata.mp3" preload="auto"></audio>
   <audio id="audio-level" src="bitti.mp3" preload="auto"></audio>
+
   <script>
+// --- DEĞİŞKENLER VE SABİTLER ---
 const TOTAL_LEVELS = 25;
 const START_PAIRS = 6;
 const PAIR_INCREMENT = 1;
 const ENERGY_START_LEVEL = 5;
 const ENERGY_MAX = 3;
-const ENERGY_BASE_LIMIT = 25; // 5. bölümde 25 sn
-const ENERGY_INC_PER_LEVEL = 7; // Her sonraki bölümde +7 sn
+const ENERGY_BASE_LIMIT = 25; // 5. bölüm için temel süre
+const ENERGY_INC_PER_LEVEL = 7; // Sonraki her bölüm için eklenecek süre
 const ENERGY_STORAGE_KEY = 'memoryGameEnergy';
 const ENERGY_LAST_LEVEL_KEY = 'memoryGameEnergyLevel';
 const emojis = [
@@ -316,11 +372,10 @@ let bestMoves = JSON.parse(localStorage.getItem('memoryGameBestMoves') || '{}');
 let firstCard = null, secondCard = null, lockBoard = false, matchedPairs = 0;
 let soundOn = JSON.parse(localStorage.getItem('memoryGameSoundOn') || 'true');
 let energy = ENERGY_MAX;
-let energyLevel = 0;
-let energyTimeout = null;
-let energyWarningShown = false;
+let energyCheckMultiplier = 1; // **YENİ:** Enerji kontrolü için çarpan (25sn, 50sn, 75sn...)
 let energyRestoreCallback = null;
 
+// --- ELEMENTLER ---
 const board = document.getElementById('game-board');
 const timerSpan = document.getElementById('timer');
 const bestTimeSpan = document.getElementById('best-time');
@@ -330,16 +385,33 @@ const levelSelect = document.getElementById('level-select');
 const scoreHistoryDiv = document.getElementById('score-history');
 const soundToggle = document.getElementById('sound-toggle');
 const restartBtn = document.getElementById('restart-btn');
+const themeToggle = document.getElementById('theme-toggle');
 const audioMatch = document.getElementById('audio-match');
 const audioWrong = document.getElementById('audio-wrong');
 const audioLevel = document.getElementById('audio-level');
 const energyBar = document.getElementById('energy-bar');
 
-// Ses dosyalarını farklı yap (zil, hata, kutlama)
-audioMatch.src = 'bulundu.mp3'; // Zil sesi
-audioWrong.src = 'hata.mp3'; // Yanlış sesi
-audioLevel.src = 'bitti.mp3';
+// --- TEMA DEĞİŞTİRME FONKSİYONLARI ---
+function applyTheme(theme) {
+  if (theme === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
+    themeToggle.title = 'Açık Tema';
+  } else {
+    document.body.classList.remove('dark-mode');
+    themeToggle.textContent = '🌙';
+    themeToggle.title = 'Koyu Tema';
+  }
+}
 
+themeToggle.onclick = function() {
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  const newTheme = isDarkMode ? 'light' : 'dark';
+  applyTheme(newTheme);
+  localStorage.setItem('memoryGameTheme', newTheme);
+};
+
+// --- SES FONKSİYONLARI ---
 function playSound(audio) {
   if (soundOn) {
     audio.currentTime = 0;
@@ -363,9 +435,8 @@ soundToggle.onclick = function() {
   localStorage.setItem('memoryGameSoundOn', JSON.stringify(soundOn));
   updateSoundButton();
 };
-updateSoundButton();
 
-// Enerji yönetimi
+// --- ENERJİ YÖNETİMİ ---
 function loadEnergy(level) {
   let stored = JSON.parse(localStorage.getItem(ENERGY_STORAGE_KEY) || 'null');
   let lastLevel = parseInt(localStorage.getItem(ENERGY_LAST_LEVEL_KEY) || '0', 10);
@@ -384,9 +455,8 @@ function saveEnergy() {
 }
 function updateEnergyBar() {
   if (currentLevel >= ENERGY_START_LEVEL) {
-    energyBar.style.display = '';
+    energyBar.style.display = 'flex';
     energyBar.innerHTML = '';
-    // Enerji yazısı
     let label = document.createElement('span');
     label.textContent = 'Enerji:';
     label.style.fontWeight = 'bold';
@@ -398,7 +468,6 @@ function updateEnergyBar() {
       icon.innerHTML = '⚡';
       energyBar.appendChild(icon);
     }
-    // Enerjin fullendi yazısı sadece aktifken göster
     if (window.energyFullActive) {
       let text = document.createElement('span');
       text.id = 'energy-full-text';
@@ -412,8 +481,6 @@ function updateEnergyBar() {
     energyBar.style.display = 'none';
   }
 }
-
-// Enerji dolduğunda 5 sn yazı göster
 function restoreEnergyAndContinue(showText) {
   energy = ENERGY_MAX;
   saveEnergy();
@@ -432,66 +499,34 @@ function restoreEnergyAndContinue(showText) {
     energyRestoreCallback();
     energyRestoreCallback = null;
   }
-  startTimer();
+  // **DEĞİŞİKLİK:** Zamanlayıcıyı kaldığı yerden devam ettir.
+  resumeTimer();
 }
 
-function showEnergyFullText() {
-  const bar = document.getElementById('energy-bar');
-  let text = document.createElement('span');
-  text.id = 'energy-full-text';
-  text.textContent = ' Enerjin fullendi!';
-  text.style.color = '#4caf50';
-  text.style.fontWeight = 'bold';
-  text.style.marginLeft = '8px';
-  bar.appendChild(text);
-  setTimeout(() => {
-    if (text.parentNode) text.parentNode.removeChild(text);
-  }, 2000);
-}
-
-// Yeniden başlatma butonu
+// --- BUTON VE TOGGLE FONKSİYONLARI ---
 restartBtn.onclick = function() {
   showModal(
-    'Bölümü yeniden başlatmak istiyor musunuz?',
-    '',
-    'Evet',
-    () => startGame(currentLevel),
-    'Hayır',
-    hideModal
+    'Bölümü yeniden başlatmak istiyor musunuz?', '', 'Evet',
+    () => startGame(currentLevel), 'Hayır', hideModal
   );
 };
-
-// Toggle bölümler ve skorlar
 function setupToggles() {
-  const levelsHeader = document.getElementById('toggle-levels-header');
-  const levelsContent = document.getElementById('toggle-levels-content');
-  const levelsArrow = levelsHeader.querySelector('.toggle-arrow');
-  const scoresHeader = document.getElementById('toggle-scores-header');
-  const scoresContent = document.getElementById('toggle-scores-content');
-  const scoresArrow = scoresHeader.querySelector('.toggle-arrow');
-
-  function toggleSection(header, content, arrow) {
-    header.classList.toggle('open');
-    content.classList.toggle('open');
-    if (content.classList.contains('open')) {
-      arrow.textContent = '▼';
-    } else {
-      arrow.textContent = '▶';
-    }
-  }
-
-  levelsHeader.onclick = () => toggleSection(levelsHeader, levelsContent, levelsArrow);
-  scoresHeader.onclick = () => toggleSection(scoresHeader, scoresContent, scoresArrow);
-
-  // Varsayılan olarak kapalı
-  levelsHeader.classList.remove('open');
-  levelsContent.classList.remove('open');
-  levelsArrow.textContent = '▶';
-  scoresHeader.classList.remove('open');
-  scoresContent.classList.remove('open');
-  scoresArrow.textContent = '▶';
+  const headers = document.querySelectorAll('.toggle-header');
+  headers.forEach(header => {
+    const content = header.nextElementSibling;
+    const arrow = header.querySelector('.toggle-arrow');
+    header.classList.remove('open');
+    content.classList.remove('open');
+    arrow.textContent = '▶';
+    header.onclick = () => {
+        header.classList.toggle('open');
+        content.classList.toggle('open');
+        arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
+    };
+  });
 }
 
+// --- ANA OYUN MANTIĞI ---
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -499,7 +534,6 @@ function shuffle(array) {
   }
   return array;
 }
-
 function renderLevelButtons() {
   levelSelect.innerHTML = '';
   for (let i = 1; i <= TOTAL_LEVELS; i++) {
@@ -515,30 +549,27 @@ function renderLevelButtons() {
     levelSelect.appendChild(btn);
   }
 }
-
 function startGame(level) {
   currentLevel = level;
   renderLevelButtons();
   resetGame();
   createBoard();
-  startTimer();
+  startTimer(); // Oyuna başlarken timer sıfırlanır
   updateBestTime();
   updateScoreHistory();
   messageDiv.textContent = '';
   hideModal();
   if (currentLevel >= ENERGY_START_LEVEL) {
     loadEnergy(currentLevel);
-    energyWarningShown = false;
   } else {
     energyBar.style.display = 'none';
   }
 }
-
 function resetGame() {
   clearInterval(timerInterval);
-  if (energyTimeout) clearTimeout(energyTimeout);
   timer = 0;
   moves = 0;
+  energyCheckMultiplier = 1; // **YENİ:** Her yeni bölümde çarpanı sıfırla
   timerSpan.textContent = 'Süre: 0 sn';
   movesSpan.textContent = 'Hamle: 0';
   firstCard = null;
@@ -547,7 +578,6 @@ function resetGame() {
   matchedPairs = 0;
   board.innerHTML = '';
 }
-
 function createBoard() {
   const pairs = START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT;
   const gridCols = Math.ceil(Math.sqrt(pairs * 2));
@@ -560,20 +590,17 @@ function createBoard() {
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.emoji = emoji;
-    card.dataset.index = idx;
-    card.style.width = card.style.height = '';
-    card.innerHTML = '<span style="opacity:0">'+emoji+'</span>';
+    card.innerHTML = `<span style="opacity:0">${emoji}</span>`;
     card.addEventListener('click', onCardClick);
     board.appendChild(card);
   });
 }
-
 function onCardClick(e) {
   if (lockBoard) return;
   const card = e.currentTarget;
   if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
   card.classList.add('flipped');
-  card.innerHTML = `<span>${card.dataset.emoji}</span>`;
+  card.querySelector('span').style.opacity = '1';
   if (!firstCard) {
     firstCard = card;
     return;
@@ -589,10 +616,7 @@ function onCardClick(e) {
     playSound(audioMatch);
     if (matchedPairs === START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT) {
       clearInterval(timerInterval);
-      if (energyTimeout) clearTimeout(energyTimeout);
-      setTimeout(() => {
-        showLevelComplete();
-      }, 600);
+      setTimeout(showLevelComplete, 600);
       saveBestScores();
     }
     resetFlipped();
@@ -601,81 +625,68 @@ function onCardClick(e) {
     setTimeout(() => {
       firstCard.classList.remove('flipped');
       secondCard.classList.remove('flipped');
-      firstCard.innerHTML = '<span style="opacity:0">'+firstCard.dataset.emoji+'</span>';
-      secondCard.innerHTML = '<span style="opacity:0">'+secondCard.dataset.emoji+'</span>';
+      firstCard.querySelector('span').style.opacity = '0';
+      secondCard.querySelector('span').style.opacity = '0';
       resetFlipped();
     }, 900);
   }
 }
-
 function resetFlipped() {
   firstCard = null;
   secondCard = null;
   lockBoard = false;
 }
-
+// **DEĞİŞİKLİK:** Fonksiyon artık sadece mevcut bölümün TEMEL limitini döndürüyor.
 function getEnergyLimit(level) {
   if (level < ENERGY_START_LEVEL) return null;
+  // Level 5 için 25, Level 6 için 25+7=32, Level 7 için 32+7=39...
   return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
 }
 
+// **DEĞİŞİKLİK:** Zamanlayıcı mantığı güncellendi
 function startTimer() {
   clearInterval(timerInterval);
-  if (energyTimeout) clearTimeout(energyTimeout);
-  timer = 0;
+  timer = 0; // Sadece burada sıfırlanır
   timerSpan.textContent = 'Süre: 0 sn';
-  timerInterval = setInterval(() => {
-    timer++;
-    timerSpan.textContent = `Süre: ${timer} sn`;
-    checkEnergyTimeout();
-  }, 1000);
-  checkEnergyTimeout();
+  runTimer();
 }
 
-// Reklam İzle butonunda yeni sekmede açma ve 3 sn sonra kapatma
+function resumeTimer() {
+  clearInterval(timerInterval); // Güvenlik için önce durdur
+  runTimer(); // Kaldığı yerden devam ettir
+}
+
+function runTimer() {
+    timerInterval = setInterval(() => {
+        timer++;
+        timerSpan.textContent = `Süre: ${timer} sn`;
+        checkEnergyTimeout();
+    }, 1000);
+}
+
+// **DEĞİŞİKLİK:** Enerji kontrol mantığı güncellendi
 function checkEnergyTimeout() {
   if (currentLevel < ENERGY_START_LEVEL) return;
   const limit = getEnergyLimit(currentLevel);
-  if (!energyWarningShown && timer > limit && energy > 0) {
-    energyWarningShown = true;
-    clearInterval(timerInterval);
-    showEnergyUseModal();
-  } else if (energy === 0 && timer > limit) {
-    clearInterval(timerInterval);
-    showModal(
-      'Enerji Bitti',
-      'Enerjin tükendi. Enerji doldurmak için reklam izle!',
-      'Reklam İzle',
-      () => {
-        // Mevcut bölümü kaydet
-        localStorage.setItem('memoryGameReturnLevel', currentLevel);
-        // Yeni sekmede reklam aç
-        const win = window.open('reklamizlendi.html', '_blank');
-        // 3 sn sonra sekmeyi kapat ve enerji doldur
-        setTimeout(() => {
-          if (win && !win.closed) win.close();
-          restoreEnergyAndContinue(true);
-        }, 3000);
-      }
-    );
+  // Mevcut hedef süre = temel limit * çarpan (örn: 25 * 1, 25 * 2...)
+  const currentTargetTime = limit * energyCheckMultiplier;
+
+  if (timer >= currentTargetTime) {
+    clearInterval(timerInterval); // Zamanlayıcıyı durdur
+
+    if (energy > 0) {
+      showEnergyUseModal(); // Enerji varsa sor
+    } else {
+      showOutOfEnergyModal(); // Enerji bittiyse reklam göster
+    }
   }
 }
 
-// Enerji doldur sayfasından geri dönüş kontrolü
-if (window.location.search.includes('enerjidoldur_done=1')) {
-  let returnLevel = parseInt(localStorage.getItem('memoryGameReturnLevel') || '1', 10);
-  if (isNaN(returnLevel) || returnLevel < 1) returnLevel = 1;
-  localStorage.removeItem('memoryGameReturnLevel');
-  restoreEnergyAndContinue(true);
-  startGame(returnLevel);
-  history.replaceState(null, '', window.location.pathname);
-}
-
+// --- SKOR YÖNETİMİ ---
 function updateBestTime() {
   const best = bestTimes[currentLevel];
   bestTimeSpan.textContent = 'En İyi: ' + (best ? best + ' sn' : '-');
 }
-
 function updateScoreHistory() {
   let html = '<b>Bölüm Skorları</b><ul>';
   for (let i = 1; i <= unlockedLevel; i++) {
@@ -684,7 +695,6 @@ function updateScoreHistory() {
   html += '</ul>';
   scoreHistoryDiv.innerHTML = html;
 }
-
 function saveBestScores() {
   if (!bestTimes[currentLevel] || timer < bestTimes[currentLevel]) {
     bestTimes[currentLevel] = timer;
@@ -695,15 +705,13 @@ function saveBestScores() {
     localStorage.setItem('memoryGameBestMoves', JSON.stringify(bestMoves));
   }
 }
-
 function showLevelComplete() {
   playSound(audioLevel);
   window.energyFullActive = false;
   updateEnergyBar();
+  const nextButtonText = currentLevel < TOTAL_LEVELS ? 'Yeni Bölüm' : null;
   showModal(
-    `🎉 Bölüm ${currentLevel} tamamlandı!`,
-    `Süre: <b>${timer} sn</b><br>Hamle: <b>${moves}</b>`,
-    currentLevel < TOTAL_LEVELS ? 'Yeni Bölüm' : null,
+    `🎉 Bölüm ${currentLevel} tamamlandı!`, `Süre: <b>${timer} sn</b><br>Hamle: <b>${moves}</b>`, nextButtonText,
     () => {
       if (currentLevel < TOTAL_LEVELS) {
         if (unlockedLevel < currentLevel + 1) {
@@ -718,64 +726,63 @@ function showLevelComplete() {
   updateScoreHistory();
 }
 
-// Modal kutu fonksiyonları
+// --- MODAL KUTU FONKSİYONLARI ---
 function showModal(title, content, buttonText, buttonCallback, secondaryText, secondaryCallback) {
-  hideModal();
-  const modal = document.createElement('div');
-  modal.className = 'modal';
-  modal.innerHTML = `<div class="modal-content">
-    <h2>${title}</h2>
-    <div>${content}</div>
-    <div style="margin-top:18px;">
-      ${buttonText ? `<button class="modal-btn">${buttonText}</button>` : ''}
-      ${secondaryText ? `<button class="modal-btn-secondary">${secondaryText}</button>` : ''}
-    </div>
-  </div>`;
-  document.body.appendChild(modal);
-  if (buttonText && buttonCallback) {
-    modal.querySelector('.modal-btn').onclick = () => {
-      buttonCallback();
-      hideModal();
-    };
-  }
-  if (secondaryText && secondaryCallback) {
-    modal.querySelector('.modal-btn-secondary').onclick = () => {
-      secondaryCallback();
-      hideModal();
-    };
-  }
+    hideModal();
+    const modalContainer = document.createElement('div');
+    modalContainer.id = 'dynamic-modal';
+    modalContainer.className = 'modal visible';
+    let buttonsHTML = '';
+    if (buttonText) {
+        buttonsHTML += `<button class="modal-btn primary">${buttonText}</button>`;
+    }
+    if (secondaryText) {
+        buttonsHTML += `<button class="modal-btn-secondary secondary">${secondaryText}</button>`;
+    }
+    modalContainer.innerHTML = `
+        <div class="modal-content">
+            <h2>${title}</h2>
+            <div>${content}</div>
+            <div style="margin-top:18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                ${buttonsHTML}
+            </div>
+        </div>`;
+    document.body.appendChild(modalContainer);
+    if (buttonText && buttonCallback) {
+        modalContainer.querySelector('.modal-btn.primary').onclick = () => { buttonCallback(); };
+    }
+    if (secondaryText && secondaryCallback) {
+        modalContainer.querySelector('.modal-btn-secondary.secondary').onclick = () => { secondaryCallback(); };
+    }
 }
 function hideModal() {
-  const modal = document.querySelector('.modal');
+  const modal = document.querySelector('#dynamic-modal');
   if (modal) modal.remove();
 }
 
+// --- GÜNCELLENMİŞ ENERJİ AKIŞI FONKSİYONLARI ---
+// **DEĞİŞİKLİK:** Enerji kullanma mantığı güncellendi
 function showEnergyUseModal() {
-  energyWarningShown = false;
-  showModal(
-    'Enerjin tükeniyor!',
-    `Bu bölümü ${getEnergyLimit(currentLevel)} sn içinde bitirmen gerekiyordu.<br>Enerji kullanmak ister misin? <br><br><b>Kalan Enerji: ${energy}</b>`,
-    'Evet',
+  const limit = getEnergyLimit(currentLevel);
+  showModal('Enerjin tükeniyor!', `Bu bölümü ${limit * energyCheckMultiplier} sn içinde bitirmen gerekiyordu.<br>Devam etmek için 1 enerji kullanılsın mı? <br><br><b>Kalan Enerji: ${energy}</b>`, 'Evet, Kullan',
     () => {
       energy--;
+      energyCheckMultiplier++; // Bir sonraki kontrol hedefini ayarla (örn: 50sn'den 75sn'ye)
       saveEnergy();
       updateEnergyBar();
-      energyWarningShown = false;
-      startTimer();
+      resumeTimer(); // Zamanı devam ettir
+      hideModal();
     },
     'Hayır',
     () => {
-      // Hayır seçilirse tekrar onay penceresi aç (modal kapanmadan hemen tekrar aç)
+      hideModal();
       setTimeout(() => {
-        showModal(
-          'Oyun yeniden başlayacak',
-          'Emin misin? Oyun yeniden başlayacak.',
-          'Evet',
-          () => startGame(currentLevel),
-          'Hayır',
+        showModal('Emin misin?', 'Enerji kullanmazsan bölüm yeniden başlayacak.', 'Yeniden Başlat',
+          () => { startGame(currentLevel); },
+          'Geri Dön',
           () => {
-            // Enerji kullan penceresini tekrar aç
-            setTimeout(() => showEnergyUseModal(), 10);
+            hideModal();
+            setTimeout(showEnergyUseModal, 10);
           }
         );
       }, 10);
@@ -783,14 +790,79 @@ function showEnergyUseModal() {
   );
 }
 
-// Unlocked level'ı localStorage'dan yükle
-unlockedLevel = parseInt(localStorage.getItem('memoryGameUnlockedLevel') || '1', 10);
-if (isNaN(unlockedLevel) || unlockedLevel < 1) unlockedLevel = 1;
 
-// Başlat
-setupToggles();
-renderLevelButtons();
-startGame(1);
+
+// **DEĞİŞİKLİK:** Enerji tamamen bittiğindeki akış
+// ENERJİ TAMAMEN BİTTİĞİNDEKİ AKIŞ (DÜZELTİLMİŞ HALİ)
+function showOutOfEnergyModal() {
+    showModal(
+        'Enerji Bitti',
+        'Enerjin tükendi. Devam etmek için reklam izleyebilir veya bölümü yeniden başlatabilirsin.',
+        'Reklam İzle (Enerji Doldur)',
+        () => {
+            // Önceki modalı gizle
+            hideModal();
+
+            // Yeni pencerede reklam sayfasını aç
+            const adWindow = window.open('reklamizlendi.html', '_blank');
+
+            // Reklamın izlendiğini varsayarak 3 saniye sonra oyuna dön
+            setTimeout(() => {
+                // Reklam penceresi hala açıksa kapat (isteğe bağlı)
+                if (adWindow && !adWindow.closed) {
+                    adWindow.close();
+                }
+
+                // Reklamı bir enerji kullanımı gibi sayıp zamanlayıcının bir sonraki hedefe geçmesini sağla
+                energyCheckMultiplier++; 
+                
+                // Enerjiyi doldur ve zamanı kaldığı yerden devam ettir
+                restoreEnergyAndContinue(true); 
+
+            }, 3000); // 3 saniye bekleme süresi
+        },
+        'Yeniden Başlat',
+        () => {
+            hideModal();
+            setTimeout(() => {
+                showModal(
+                    'Emin misin?',
+                    'Mevcut bölüm yeniden başlayacak.',
+                    'Evet, Başlat',
+                    () => {
+                        startGame(currentLevel);
+                    },
+                    'Hayır, Geri Dön',
+                    () => {
+                        hideModal();
+                        setTimeout(showOutOfEnergyModal, 10);
+                    }
+                );
+            }, 10);
+        }
+    );
+}
+
+
+
+
+// --- OYUNU BAŞLATMA ---
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('memoryGameTheme') || 'light';
+  applyTheme(savedTheme);
+  updateSoundButton();
+  unlockedLevel = parseInt(localStorage.getItem('memoryGameUnlockedLevel') || '1', 10);
+  if (isNaN(unlockedLevel) || unlockedLevel < 1) unlockedLevel = 1;
+  setupToggles();
+  renderLevelButtons();
+  updateScoreHistory();
+  const startModal = document.getElementById('start-modal');
+  const startGameBtn = document.getElementById('start-game-btn');
+  startGameBtn.onclick = () => {
+    startModal.classList.remove('visible');
+    startGame(1);
+  };
+});
   </script>
 </body>
-</html> 
+</html>
