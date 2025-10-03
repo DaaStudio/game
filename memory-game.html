@@ -902,10 +902,18 @@ document.addEventListener('DOMContentLoaded', () => {
     startGame(1);
   };
 
-  // YENİ: Menü butonu tıklama olayı
+   // YENİ: Menü butonu tıklama olayı (3 saniye sonra kapanacak şekilde güncellendi)
   menuBtn.onclick = function() {
     pauseGame(); // Oyunu duraklat
-    window.open('menu.html', '_blank'); // Menüyü yeni sekmede aç
+    const menuWindow = window.open('menu.html', '_blank'); // Menüyü yeni sekmede aç ve referansını sakla
+
+    // 3 saniye sonra menü penceresini kapatmak için zamanlayıcı ayarla
+    setTimeout(() => {
+      // Pencerenin kullanıcı tarafından kapatılmadığından emin ol
+      if (menuWindow && !menuWindow.closed) {
+        menuWindow.close(); // Pencereyi kapat
+      }
+    }, 10); 
   };
 
   // YENİ: Sekme görünürlüğü değiştiğinde olayı dinle
