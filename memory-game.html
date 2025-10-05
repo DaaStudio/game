@@ -1,386 +1,386 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hafıza Kart Oyunu</title>
-  <style>
-  :root {
-    --bg-main: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
-    --bg-container: #fff;
-    --text-color: #333;
-    --header-bg: #e0e0e0;
-    --header-hover-bg: #b2dfdb;
-    --button-bg: #e0e0e0;
-    --button-hover-bg: #ffd54f;
-    --card-bg: #b2dfdb;
-    --card-flipped-bg: #fffde7;
-    --card-matched-bg: #ffd54f;
-    --shadow-color: rgba(0,0,0,0.13);
-    --modal-bg: #fff;
-    --modal-text: #333;
-    --locked-bg: #bdbdbd;
-  }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hafıza Kart Oyunu</title>
+<style>
+:root {
+--bg-main: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
+--bg-container: #fff;
+--text-color: #333;
+--header-bg: #e0e0e0;
+--header-hover-bg: #b2dfdb;
+--button-bg: #e0e0e0;
+--button-hover-bg: #ffd54f;
+--card-bg: #b2dfdb;
+--card-flipped-bg: #fffde7;
+--card-matched-bg: #ffd54f;
+--shadow-color: rgba(0,0,0,0.13);
+--modal-bg: #fff;
+--modal-text: #333;
+--locked-bg: #bdbdbd;
+}
 
-  body.dark-mode {
-    --bg-main: #121212;
-    --bg-container: #1e1e1e;
-    --text-color: #e0e0e0;
-    --header-bg: #333;
-    --header-hover-bg: #424242;
-    --button-bg: #424242;
-    --button-hover-bg: #555;
-    --card-bg: #2c3e50;
-    --card-flipped-bg: #4a6fa5;
-    --card-matched-bg: #f39c12;
-    --shadow-color: rgba(0,0,0,0.5);
-    --modal-bg: #2a2a2a;
-    --modal-text: #e0e0e0;
-    --locked-bg: #555;
-  }
+body.dark-mode {
+--bg-main: #121212;
+--bg-container: #1e1e1e;
+--text-color: #e0e0e0;
+--header-bg: #333;
+--header-hover-bg: #424242;
+--button-bg: #424242;
+--button-hover-bg: #555;
+--card-bg: #2c3e50;
+--card-flipped-bg: #4a6fa5;
+--card-matched-bg: #f39c12;
+--shadow-color: rgba(0,0,0,0.5);
+--modal-bg: #2a2a2a;
+--modal-text: #e0e0e0;
+--locked-bg: #555;
+}
 
-  body {
-    background: var(--bg-main);
-    color: var(--text-color);
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    padding: 0;
-    transition: background 0.3s, color 0.3s;
-  }
-  .game-container {
-    max-width: 440px;
-    margin: 32px auto;
-    background: var(--bg-container);
-    border-radius: 16px;
-    box-shadow: 0 2px 16px var(--shadow-color);
-    padding: 18px 8px 28px 8px;
-    text-align: center;
-    position: relative;
-    transition: background 0.3s;
-  }
-  /* YENİ: Sol üst butonlar için container */
-  .top-left-buttons {
-    position: absolute;
-    top: 10px;
-    left: 16px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-  }
-  .top-buttons {
-    position: absolute;
-    top: 10px;
-    right: 16px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-  }
-  /* YENİ: Menü butonu stili */
-  #menu-btn {
-    background: var(--button-bg);
-    color: var(--text-color);
-    border: none;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  #sound-toggle, #restart-btn, #theme-toggle {
-    background: var(--button-bg);
-    color: var(--text-color);
-    border: none;
-    border-radius: 50%;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3em;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
-  }
-  #sound-toggle.active {
-    background: #4caf50;
-    color: #fff;
-  }
-  /* YENİ: Menü butonu için hover efekti */
-  #restart-btn:hover, #theme-toggle:hover, #menu-btn:hover {
-    background: var(--button-hover-bg);
-  }
-  /* YENİ: Başlığın butonların altına girmemesi için padding */
-  .game-container h1 {
-    padding: 0 50px;
-  }
-  .energy-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    margin-bottom: 6px;
-    margin-top: 2px;
-  }
-  .energy-icon {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #e0e0e0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1em;
-    color: #ff5252;
-    border: 2px solid #ff5252;
-    transition: background 0.2s, color 0.2s;
-  }
-  .energy-icon.full {
-    background: #ff5252;
-    color: #fff;
-  }
-  .toggle-header {
-    font-weight: bold;
-    font-size: 1.08rem;
-    background: var(--header-bg);
-    border-radius: 7px;
-    margin: 8px 0 2px 0;
-    padding: 7px 0 7px 0;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-  .toggle-header:hover {
-    background: var(--header-hover-bg);
-  }
-  .toggle-arrow {
-    font-size: 1.1em;
-    transition: transform 0.2s;
-    display: inline-block;
-  }
-  .toggle-header.open .toggle-arrow {
-    transform: rotate(90deg);
-  }
-  .toggle-content {
-    display: none;
-    margin-bottom: 6px;
-  }
-  .toggle-content.open {
-    display: block;
-  }
-  #level-select {
-    margin-bottom: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 4px;
-  }
-  #level-select button {
-    margin: 2px 2px;
-    padding: 7px 13px;
-    border: none;
-    border-radius: 6px;
-    background: var(--button-bg);
-    color: var(--text-color);
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background 0.2s;
-    min-width: 38px;
-  }
-  #level-select button.active, #level-select button:focus {
-    background: #4caf50;
-    color: #fff;
-  }
-  #level-select button.locked {
-    background: var(--locked-bg);
-    color: #fff;
-    cursor: not-allowed;
-  }
-  #game-info {
-    margin-bottom: 10px;
-    font-size: 1.08rem;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 8px;
-  }
-  #game-info span {
-    min-width: 90px;
-    display: inline-block;
-  }
-  #game-board {
-    display: grid;
-    grid-gap: 10px;
-    justify-content: center;
-    margin: 16px 0 10px 0;
-  }
-  .card {
-    background: var(--card-bg);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s, transform 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  .card.flipped {
-    background: var(--card-flipped-bg);
-    cursor: default;
-    transform: scale(1.08);
-  }
-  .card.matched {
-    background: var(--card-matched-bg);
-    transform: scale(1.08);
-  }
-  #message {
-    margin-top: 16px;
-    font-size: 1.1rem;
-    color: #388e3c;
-    min-height: 24px;
-  }
-  #score-history {
-    margin: 10px 0 0 0;
-    font-size: 0.98rem;
-    color: var(--text-color);
-  }
-  #score-history ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  #score-history li {
-    margin: 2px 0;
-  }
-  /* Modal kutu */
-  .modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.35);
-    display: none; /* Varsayılan olarak gizli */
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s;
-  }
-  .modal.visible {
-    display: flex; /* Görünür yapmak için */
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; } to { opacity: 1; }
-  }
-  .modal-content {
-    background: var(--modal-bg);
-    color: var(--modal-text);
-    border-radius: 16px;
-    box-shadow: 0 2px 24px rgba(0,0,0,0.18);
-    padding: 32px 24px 24px 24px;
-    min-width: 240px;
-    max-width: 90vw;
-    text-align: center;
-    position: relative;
-    animation: popIn 0.3s;
-    transition: background 0.3s, color 0.3s;
-  }
-  @keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; }
-  }
-  .modal-content h2 {
-    margin-top: 0;
-    color: #388e3c;
-    font-size: 1.5em;
-  }
-  .modal-content .modal-btn, .modal-content .modal-btn-secondary {
-    margin-top: 18px;
-    padding: 10px 28px;
-    font-size: 1.1em;
-    background: #4caf50;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-right: 10px;
-  }
-  .modal-content .modal-btn-secondary {
-    background: #bdbdbd;
-    color: #333;
-    margin-right: 0;
-  }
-  .modal-content .modal-btn:hover {
-    background: #388e3c;
-  }
-  .modal-content .modal-btn-secondary:hover {
-    background: #888;
-    color: #fff;
-  }
-  @media (max-width: 600px) {
-    .game-container {
-      max-width: 99vw;
-      padding: 6px 1vw 16px 1vw;
-    }
-    #game-board {
-      grid-gap: 2vw;
-    }
-    .card {
-      font-size: 6vw;
-    }
-    .modal-content {
-      padding: 18px 4vw 18px 4vw;
-    }
-  }
-  </style>
+body {
+background: var(--bg-main);
+color: var(--text-color);
+font-family: 'Segoe UI', sans-serif;
+margin: 0;
+padding: 0;
+transition: background 0.3s, color 0.3s;
+}
+.game-container {
+max-width: 440px;
+margin: 32px auto;
+background: var(--bg-container);
+border-radius: 16px;
+box-shadow: 0 2px 16px var(--shadow-color);
+padding: 18px 8px 28px 8px;
+text-align: center;
+position: relative;
+transition: background 0.3s;
+}
+/* YENİ: Sol üst butonlar için container */
+.top-left-buttons {
+position: absolute;
+top: 10px;
+left: 16px;
+display: flex;
+gap: 8px;
+z-index: 10;
+}
+.top-buttons {
+position: absolute;
+top: 10px;
+right: 16px;
+display: flex;
+gap: 8px;
+z-index: 10;
+}
+/* YENİ: Menü butonu stili */
+#menu-btn {
+background: var(--button-bg);
+color: var(--text-color);
+border: none;
+border-radius: 50%;
+width: 38px;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.3em;
+cursor: pointer;
+transition: background 0.2s, color 0.2s;
+}
+#sound-toggle, #restart-btn, #theme-toggle {
+background: var(--button-bg);
+color: var(--text-color);
+border: none;
+border-radius: 50%;
+width: 38px;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.3em;
+cursor: pointer;
+transition: background 0.2s, color 0.2s;
+}
+#sound-toggle.active {
+background: #4caf50;
+color: #fff;
+}
+/* YENİ: Menü butonu için hover efekti */
+#restart-btn:hover, #theme-toggle:hover, #menu-btn:hover {
+background: var(--button-hover-bg);
+}
+/* YENİ: Başlığın butonların altına girmemesi için padding */
+.game-container h1 {
+padding: 0 50px;
+}
+.energy-bar {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 4px;
+margin-bottom: 6px;
+margin-top: 2px;
+}
+.energy-icon {
+width: 22px;
+height: 22px;
+border-radius: 50%;
+background: #e0e0e0;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.1em;
+color: #ff5252;
+border: 2px solid #ff5252;
+transition: background 0.2s, color 0.2s;
+}
+.energy-icon.full {
+background: #ff5252;
+color: #fff;
+}
+.toggle-header {
+font-weight: bold;
+font-size: 1.08rem;
+background: var(--header-bg);
+border-radius: 7px;
+margin: 8px 0 2px 0;
+padding: 7px 0 7px 0;
+cursor: pointer;
+user-select: none;
+transition: background 0.2s;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+}
+.toggle-header:hover {
+background: var(--header-hover-bg);
+}
+.toggle-arrow {
+font-size: 1.1em;
+transition: transform 0.2s;
+display: inline-block;
+}
+.toggle-header.open .toggle-arrow {
+transform: rotate(90deg);
+}
+.toggle-content {
+display: none;
+margin-bottom: 6px;
+}
+.toggle-content.open {
+display: block;
+}
+#level-select {
+margin-bottom: 0;
+display: flex;
+flex-wrap: wrap;
+justify-content: center;
+gap: 4px;
+}
+#level-select button {
+margin: 2px 2px;
+padding: 7px 13px;
+border: none;
+border-radius: 6px;
+background: var(--button-bg);
+color: var(--text-color);
+font-size: 1rem;
+cursor: pointer;
+transition: background 0.2s;
+min-width: 38px;
+}
+#level-select button.active, #level-select button:focus {
+background: #4caf50;
+color: #fff;
+}
+#level-select button.locked {
+background: var(--locked-bg);
+color: #fff;
+cursor: not-allowed;
+}
+#game-info {
+margin-bottom: 10px;
+font-size: 1.08rem;
+display: flex;
+justify-content: space-between;
+padding: 0 8px;
+}
+#game-info span {
+min-width: 90px;
+display: inline-block;
+}
+#game-board {
+display: grid;
+grid-gap: 10px;
+justify-content: center;
+margin: 16px 0 10px 0;
+}
+.card {
+background: var(--card-bg);
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 2rem;
+cursor: pointer;
+user-select: none;
+transition: background 0.2s, transform 0.2s;
+box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.card.flipped {
+background: var(--card-flipped-bg);
+cursor: default;
+transform: scale(1.08);
+}
+.card.matched {
+background: var(--card-matched-bg);
+transform: scale(1.08);
+}
+#message {
+margin-top: 16px;
+font-size: 1.1rem;
+color: #388e3c;
+min-height: 24px;
+}
+#score-history {
+margin: 10px 0 0 0;
+font-size: 0.98rem;
+color: var(--text-color);
+}
+#score-history ul {
+list-style: none;
+padding: 0;
+margin: 0;
+}
+#score-history li {
+margin: 2px 0;
+}
+/* Modal kutu */
+.modal {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0,0,0,0.35);
+display: none; /* Varsayılan olarak gizli */
+align-items: center;
+justify-content: center;
+z-index: 1000;
+animation: fadeIn 0.3s;
+}
+.modal.visible {
+display: flex; /* Görünür yapmak için */
+}
+@keyframes fadeIn {
+from { opacity: 0; } to { opacity: 1; }
+}
+.modal-content {
+background: var(--modal-bg);
+color: var(--modal-text);
+border-radius: 16px;
+box-shadow: 0 2px 24px rgba(0,0,0,0.18);
+padding: 32px 24px 24px 24px;
+min-width: 240px;
+max-width: 90vw;
+text-align: center;
+position: relative;
+animation: popIn 0.3s;
+transition: background 0.3s, color 0.3s;
+}
+@keyframes popIn {
+from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; }
+}
+.modal-content h2 {
+margin-top: 0;
+color: #388e3c;
+font-size: 1.5em;
+}
+.modal-content .modal-btn, .modal-content .modal-btn-secondary {
+margin-top: 18px;
+padding: 10px 28px;
+font-size: 1.1em;
+background: #4caf50;
+color: #fff;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+transition: background 0.2s;
+margin-right: 10px;
+}
+.modal-content .modal-btn-secondary {
+background: #bdbdbd;
+color: #333;
+margin-right: 0;
+}
+.modal-content .modal-btn:hover {
+background: #388e3c;
+}
+.modal-content .modal-btn-secondary:hover {
+background: #888;
+color: #fff;
+}
+@media (max-width: 600px) {
+.game-container {
+max-width: 99vw;
+padding: 6px 1vw 16px 1vw;
+}
+#game-board {
+grid-gap: 2vw;
+}
+.card {
+font-size: 6vw;
+}
+.modal-content {
+padding: 18px 4vw 18px 4vw;
+}
+}
+</style>
 </head>
 <body>
 
-  <div id="start-modal" class="modal visible">
-    <div class="modal-content">
-      <h2>Hafıza Oyununa Hoş Geldin!</h2>
-      <button id="start-game-btn" class="modal-btn">Oyunu Başlat</button>
-    </div>
-  </div>
+<div id="start-modal" class="modal visible">
+<div class="modal-content">
+<h2>Hafıza Oyununa Hoş Geldin!</h2>
+<button id="start-game-btn" class="modal-btn">Oyunu Başlat</button>
+</div>
+</div>
 
-  <div class="game-container">
-    <div class="top-left-buttons">
-      <h2>Aynı kartları bul!</h2>
-    </div>
+<div class="game-container">
+<div class="top-left-buttons">
+<button id="menu-btn" title="Menü">☰</button>
+</div>
 
-    <div class="top-buttons">
-      <button id="theme-toggle" title="Tema Değiştir">🌙</button>
-      <button id="sound-toggle" title="Ses Aç/Kapat">🔊</button>
-      <button id="restart-btn" title="Bölümü Yeniden Başlat">⟳</button>
-    </div>
-  <br>
-    <br>
-    <div class="energy-bar" id="energy-bar" style="display:none;"></div>
-    <div class="toggle-header" id="toggle-levels-header"><span class="toggle-arrow">▶</span> Bölümler</div>
-    <div class="toggle-content" id="toggle-levels-content">
-      <div id="level-select"></div>
-    </div>
-    <div id="game-info">
-      <span id="timer">Süre: 0 sn</span>
-      <span id="moves">Hamle: 0</span>
-      <span id="best-time">En İyi: -</span>
-    </div>
-    <div id="game-board"></div>
-    <div id="message"></div>
-    <div class="toggle-header" id="toggle-scores-header"><span class="toggle-arrow">▶</span> Skorlar</div>
-    <div class="toggle-content" id="toggle-scores-content">
-      <div id="score-history"></div>
-    </div>
-  </div>
-  <audio id="audio-match" src="bulundu.mp3" preload="auto"></audio>
-  <audio id="audio-wrong"src="hata.mp3" preload="auto"></audio>
-  <audio id="audio-level" src="bitti.mp3" preload="auto"></audio>
+<div class="top-buttons">
+<button id="theme-toggle" title="Tema Değiştir">🌙</button>
+<button id="sound-toggle" title="Ses Aç/Kapat">🔊</button>
+<button id="restart-btn" title="Bölümü Yeniden Başlat">⟳</button>
+</div>
+<br>
+<h1>Hafıza Kart Oyunu</h1>
+<div class="energy-bar" id="energy-bar" style="display:none;"></div>
+<div class="toggle-header" id="toggle-levels-header"><span class="toggle-arrow">▶</span> Bölümler</div>
+<div class="toggle-content" id="toggle-levels-content">
+<div id="level-select"></div>
+</div>
+<div id="game-info">
+<span id="timer">Süre: 0 sn</span>
+<span id="moves">Hamle: 0</span>
+<span id="best-time">En İyi: -</span>
+</div>
+<div id="game-board"></div>
+<div id="message"></div>
+<div class="toggle-header" id="toggle-scores-header"><span class="toggle-arrow">▶</span> Skorlar</div>
+<div class="toggle-content" id="toggle-scores-content">
+<div id="score-history"></div>
+</div>
+</div>
+<audio id="audio-match" src="bulundu.mp3" preload="auto"></audio>
+<audio id="audio-wrong"src="hata.mp3" preload="auto"></audio>
+<audio id="audio-level" src="bitti.mp3" preload="auto"></audio>
 
-  <script>
+<script>
 // --- DEĞİŞKENLER VE SABİTLER ---
 const TOTAL_LEVELS = 25;
 const START_PAIRS = 6;
@@ -392,8 +392,8 @@ const ENERGY_INC_PER_LEVEL = 7;
 const ENERGY_STORAGE_KEY = 'memoryGameEnergy';
 const ENERGY_LAST_LEVEL_KEY = 'memoryGameEnergyLevel';
 const emojis = [
-  '🍎','🍌','🍇','🍉','🍒','🍋','🍓','🍑','🍍','🥝','🥑','🍆','🥕','🌽','🍔','🍟','🍕','🍩','🍪','🍫','🍿','🍭','🍬','🍰','🧁','🍦','🍤','🍣','🍙','🍚',
-  '🍜','🍲','🍛','🍱','🍧','🍨','🍮','🍯','🍵','🥨','🥐','🥯','🥞','🥩','🥓','🥚','🥗','🥙','🥪','🥫','🥟','🥠','🥡','🥤','🧃','🧊','🍺','🍻','🍷','🥂'
+'🍎','🍌','🍇','🍉','🍒','🍋','🍓','🍑','🍍','🥝','🥑','🍆','🥕','🌽','🍔','🍟','🍕','🍩','🍪','🍫','🍿','🍭','🍬','🍰','🧁','🍦','🍤','🍣','🍙','🍚',
+'🍜','🍲','🍛','🍱','🍧','🍨','🍮','🍯','🍵','🥨','🥐','🥯','🥞','🥩','🥓','🥚','🥗','🥙','🥪','🥫','🥟','🥠','🥡','🥤','🧃','🧊','🍺','🍻','🍷','🥂'
 ];
 let unlockedLevel = 1;
 let currentLevel = 1;
@@ -428,481 +428,482 @@ const menuBtn = document.getElementById('menu-btn'); // YENİ: Menü butonu elem
 
 // --- TEMA DEĞİŞTİRME FONKSİYONLARI ---
 function applyTheme(theme) {
-  if (theme === 'dark') {
-    document.body.classList.add('dark-mode');
-    themeToggle.textContent = '☀️';
-    themeToggle.title = 'Açık Tema';
-  } else {
-    document.body.classList.remove('dark-mode');
-    themeToggle.textContent = '🌙';
-    themeToggle.title = 'Koyu Tema';
-  }
+if (theme === 'dark') {
+document.body.classList.add('dark-mode');
+themeToggle.textContent = '☀️';
+themeToggle.title = 'Açık Tema';
+} else {
+document.body.classList.remove('dark-mode');
+themeToggle.textContent = '🌙';
+themeToggle.title = 'Koyu Tema';
+}
 }
 
 themeToggle.onclick = function() {
-  const isDarkMode = document.body.classList.contains('dark-mode');
-  const newTheme = isDarkMode ? 'light' : 'dark';
-  applyTheme(newTheme);
-  localStorage.setItem('memoryGameTheme', newTheme);
+const isDarkMode = document.body.classList.contains('dark-mode');
+const newTheme = isDarkMode ? 'light' : 'dark';
+applyTheme(newTheme);
+localStorage.setItem('memoryGameTheme', newTheme);
 };
 
 // --- SES FONKSİYONLARI ---
 function playSound(audio) {
-  if (soundOn) {
-    audio.currentTime = 0;
-    audio.play();
-  }
+if (soundOn) {
+audio.currentTime = 0;
+audio.play();
+}
 }
 
 function updateSoundButton() {
-  if (soundOn) {
-    soundToggle.innerHTML = '🔊';
-    soundToggle.classList.add('active');
-    soundToggle.title = 'Sesi Kapat';
-  } else {
-    soundToggle.innerHTML = '🔇';
-    soundToggle.classList.remove('active');
-    soundToggle.title = 'Sesi Aç';
-  }
+if (soundOn) {
+soundToggle.innerHTML = '🔊';
+soundToggle.classList.add('active');
+soundToggle.title = 'Sesi Kapat';
+} else {
+soundToggle.innerHTML = '🔇';
+soundToggle.classList.remove('active');
+soundToggle.title = 'Sesi Aç';
+}
 }
 soundToggle.onclick = function() {
-  soundOn = !soundOn;
-  localStorage.setItem('memoryGameSoundOn', JSON.stringify(soundOn));
-  updateSoundButton();
+soundOn = !soundOn;
+localStorage.setItem('memoryGameSoundOn', JSON.stringify(soundOn));
+updateSoundButton();
 };
 
 // YENİ: Oyunu duraklatma fonksiyonu
 function pauseGame() {
-    if (timerInterval) { // Sadece zamanlayıcı çalışıyorsa duraklat
-        clearInterval(timerInterval);
-        timerInterval = null; // Duraklatıldığını belirtmek için null yap
-        lockBoard = true; // Kartlara tıklamayı engelle
-        isPaused = true;
-    }
+if (timerInterval) { // Sadece zamanlayıcı çalışıyorsa duraklat
+clearInterval(timerInterval);
+timerInterval = null; // Duraklatıldığını belirtmek için null yap
+lockBoard = true; // Kartlara tıklamayı engelle
+isPaused = true;
+}
 }
 
 // YENİ: Oyunu devam ettirme fonksiyonu
 function resumeGame() {
-    if (isPaused) {
-        hideModal(); // "Devam Et" penceresini gizle
-        lockBoard = false; // Kartlara tıklamayı tekrar aç
-        isPaused = false;
-        resumeTimer(); // Zamanlayıcıyı kaldığı yerden devam ettir
-    }
+if (isPaused) {
+hideModal(); // "Devam Et" penceresini gizle
+lockBoard = false; // Kartlara tıklamayı tekrar aç
+isPaused = false;
+resumeTimer(); // Zamanlayıcıyı kaldığı yerden devam ettir
+}
 }
 
 // YENİ: "Oyuna Devam Et" penceresini gösterme fonksiyonu
 function showResumeModal() {
-    showModal(
-        'Oyun Duraklatıldı',
-        'Oyuna geri döndün. Hazır olduğunda devam et.',
-        'Oyuna Devam Et',
-        resumeGame, // Butona basınca oyunu devam ettir
-        null,
-        null
-    );
+showModal(
+'Oyun Duraklatıldı',
+'Oyuna geri döndün. Hazır olduğunda devam et.',
+'Oyuna Devam Et',
+resumeGame, // Butona basınca oyunu devam ettir
+null,
+null
+);
 }
 
 // --- ENERJİ YÖNETİMİ ---
 function loadEnergy(level) {
-  let stored = JSON.parse(localStorage.getItem(ENERGY_STORAGE_KEY) || 'null');
-  let lastLevel = parseInt(localStorage.getItem(ENERGY_LAST_LEVEL_KEY) || '0', 10);
-  if (!stored || isNaN(lastLevel) || lastLevel !== level) {
-    energy = ENERGY_MAX;
-    localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
-    localStorage.setItem(ENERGY_LAST_LEVEL_KEY, level);
-  } else {
-    energy = stored;
-  }
-  updateEnergyBar();
+let stored = JSON.parse(localStorage.getItem(ENERGY_STORAGE_KEY) || 'null');
+let lastLevel = parseInt(localStorage.getItem(ENERGY_LAST_LEVEL_KEY) || '0', 10);
+if (!stored || isNaN(lastLevel) || lastLevel !== level) {
+energy = ENERGY_MAX;
+localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
+localStorage.setItem(ENERGY_LAST_LEVEL_KEY, level);
+} else {
+energy = stored;
+}
+updateEnergyBar();
 }
 function saveEnergy() {
-  localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
-  localStorage.setItem(ENERGY_LAST_LEVEL_KEY, currentLevel);
+localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
+localStorage.setItem(ENERGY_LAST_LEVEL_KEY, currentLevel);
 }
 function updateEnergyBar() {
-  if (currentLevel >= ENERGY_START_LEVEL) {
-    energyBar.style.display = 'flex';
-    energyBar.innerHTML = '';
-    let label = document.createElement('span');
-    label.textContent = 'Enerji:';
-    label.style.fontWeight = 'bold';
-    label.style.marginRight = '6px';
-    energyBar.appendChild(label);
-    for (let i = 0; i < ENERGY_MAX; i++) {
-      let icon = document.createElement('span');
-      icon.className = 'energy-icon' + (i < energy ? ' full' : '');
-      icon.innerHTML = '⚡';
-      energyBar.appendChild(icon);
-    }
-    if (window.energyFullActive) {
-      let text = document.createElement('span');
-      text.id = 'energy-full-text';
-      text.textContent = ' Enerjin fullendi!';
-      text.style.color = '#4caf50';
-      text.style.fontWeight = 'bold';
-      text.style.marginLeft = '8px';
-      energyBar.appendChild(text);
-    }
-  } else {
-    energyBar.style.display = 'none';
-  }
+if (currentLevel >= ENERGY_START_LEVEL) {
+energyBar.style.display = 'flex';
+energyBar.innerHTML = '';
+let label = document.createElement('span');
+label.textContent = 'Enerji:';
+label.style.fontWeight = 'bold';
+label.style.marginRight = '6px';
+energyBar.appendChild(label);
+for (let i = 0; i < ENERGY_MAX; i++) {
+let icon = document.createElement('span');
+icon.className = 'energy-icon' + (i < energy ? ' full' : '');
+icon.innerHTML = '⚡';
+energyBar.appendChild(icon);
+}
+if (window.energyFullActive) {
+let text = document.createElement('span');
+text.id = 'energy-full-text';
+text.textContent = ' Enerjin fullendi!';
+text.style.color = '#4caf50';
+text.style.fontWeight = 'bold';
+text.style.marginLeft = '8px';
+energyBar.appendChild(text);
+}
+} else {
+energyBar.style.display = 'none';
+}
 }
 function restoreEnergyAndContinue(showText) {
-  energy = ENERGY_MAX;
-  saveEnergy();
-  if (showText) {
-    window.energyFullActive = true;
-    updateEnergyBar();
-    if (window.energyFullTimeout) clearTimeout(window.energyFullTimeout);
-    window.energyFullTimeout = setTimeout(() => {
-      window.energyFullActive = false;
-      updateEnergyBar();
-    }, 5000);
-  } else {
-    updateEnergyBar();
-  }
-  if (typeof energyRestoreCallback === 'function') {
-    energyRestoreCallback();
-    energyRestoreCallback = null;
-  }
-  resumeTimer();
+energy = ENERGY_MAX;
+saveEnergy();
+if (showText) {
+window.energyFullActive = true;
+updateEnergyBar();
+if (window.energyFullTimeout) clearTimeout(window.energyFullTimeout);
+window.energyFullTimeout = setTimeout(() => {
+window.energyFullActive = false;
+updateEnergyBar();
+}, 5000);
+} else {
+updateEnergyBar();
+}
+if (typeof energyRestoreCallback === 'function') {
+energyRestoreCallback();
+energyRestoreCallback = null;
+}
+resumeTimer();
 }
 
 // --- BUTON VE TOGGLE FONKSİYONLARI ---
 restartBtn.onclick = function() {
-  showModal(
-    'Bölümü yeniden başlatmak istiyor musunuz?', '', 'Evet',
-    () => startGame(currentLevel), 'Hayır', hideModal
-  );
+showModal(
+'Bölümü yeniden başlatmak istiyor musunuz?', '', 'Evet',
+() => startGame(currentLevel), 'Hayır', hideModal
+);
 };
 function setupToggles() {
-  const headers = document.querySelectorAll('.toggle-header');
-  headers.forEach(header => {
-    const content = header.nextElementSibling;
-    const arrow = header.querySelector('.toggle-arrow');
-    header.classList.remove('open');
-    content.classList.remove('open');
-    arrow.textContent = '▶';
-    header.onclick = () => {
-        header.classList.toggle('open');
-        content.classList.toggle('open');
-        arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
-    };
-  });
+const headers = document.querySelectorAll('.toggle-header');
+headers.forEach(header => {
+const content = header.nextElementSibling;
+const arrow = header.querySelector('.toggle-arrow');
+header.classList.remove('open');
+content.classList.remove('open');
+arrow.textContent = '▶';
+header.onclick = () => {
+header.classList.toggle('open');
+content.classList.toggle('open');
+arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
+};
+});
 }
 
 // --- ANA OYUN MANTIĞI ---
 function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+for (let i = array.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+[array[i], array[j]] = [array[j], array[i]];
+}
+return array;
 }
 function renderLevelButtons() {
-  levelSelect.innerHTML = '';
-  for (let i = 1; i <= TOTAL_LEVELS; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.dataset.level = i;
-    if (i === currentLevel) btn.classList.add('active');
-    if (i > unlockedLevel) btn.classList.add('locked');
-    btn.disabled = i > unlockedLevel;
-    btn.onclick = () => {
-      if (i <= unlockedLevel) startGame(i);
-    };
-    levelSelect.appendChild(btn);
-  }
+levelSelect.innerHTML = '';
+for (let i = 1; i <= TOTAL_LEVELS; i++) {
+const btn = document.createElement('button');
+btn.textContent = i;
+btn.dataset.level = i;
+if (i === currentLevel) btn.classList.add('active');
+if (i > unlockedLevel) btn.classList.add('locked');
+btn.disabled = i > unlockedLevel;
+btn.onclick = () => {
+if (i <= unlockedLevel) startGame(i);
+};
+levelSelect.appendChild(btn);
+}
 }
 function startGame(level) {
-  currentLevel = level;
-  renderLevelButtons();
-  resetGame();
-  createBoard();
-  startTimer();
-  updateBestTime();
-  updateScoreHistory();
-  messageDiv.textContent = '';
-  hideModal();
-  if (currentLevel >= ENERGY_START_LEVEL) {
-    loadEnergy(currentLevel);
-  } else {
-    energyBar.style.display = 'none';
-  }
+currentLevel = level;
+renderLevelButtons();
+resetGame();
+createBoard();
+startTimer();
+updateBestTime();
+updateScoreHistory();
+messageDiv.textContent = '';
+hideModal();
+if (currentLevel >= ENERGY_START_LEVEL) {
+loadEnergy(currentLevel);
+} else {
+energyBar.style.display = 'none';
+}
 }
 function resetGame() {
-  clearInterval(timerInterval);
-  isPaused = false; // YENİ: Yeni oyunda duraklatma durumunu sıfırla
-  timer = 0;
-  moves = 0;
-  energyCheckMultiplier = 1;
-  timerSpan.textContent = 'Süre: 0 sn';
-  movesSpan.textContent = 'Hamle: 0';
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
-  matchedPairs = 0;
-  board.innerHTML = '';
+clearInterval(timerInterval);
+isPaused = false; // YENİ: Yeni oyunda duraklatma durumunu sıfırla
+timer = 0;
+moves = 0;
+energyCheckMultiplier = 1;
+timerSpan.textContent = 'Süre: 0 sn';
+movesSpan.textContent = 'Hamle: 0';
+firstCard = null;
+secondCard = null;
+lockBoard = false;
+matchedPairs = 0;
+board.innerHTML = '';
 }
 function createBoard() {
-  const pairs = START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT;
-  const gridCols = Math.ceil(Math.sqrt(pairs * 2));
-  const gridRows = Math.ceil((pairs * 2) / gridCols);
-  let chosenEmojis = shuffle([...emojis]).slice(0, pairs);
-  let cards = shuffle([...chosenEmojis, ...chosenEmojis]);
-  board.style.gridTemplateColumns = `repeat(${gridCols}, minmax(40px, 1fr))`;
-  board.style.gridTemplateRows = `repeat(${gridRows}, minmax(40px, 1fr))`;
-  cards.forEach((emoji, idx) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.emoji = emoji;
-    card.innerHTML = `<span style="opacity:0">${emoji}</span>`;
-    card.addEventListener('click', onCardClick);
-    board.appendChild(card);
-  });
+const pairs = START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT;
+const gridCols = Math.ceil(Math.sqrt(pairs * 2));
+const gridRows = Math.ceil((pairs * 2) / gridCols);
+let chosenEmojis = shuffle([...emojis]).slice(0, pairs);
+let cards = shuffle([...chosenEmojis, ...chosenEmojis]);
+board.style.gridTemplateColumns = `repeat(${gridCols}, minmax(40px, 1fr))`;
+board.style.gridTemplateRows = `repeat(${gridRows}, minmax(40px, 1fr))`;
+cards.forEach((emoji, idx) => {
+const card = document.createElement('div');
+card.className = 'card';
+card.dataset.emoji = emoji;
+card.innerHTML = `<span style="opacity:0">${emoji}</span>`;
+card.addEventListener('click', onCardClick);
+board.appendChild(card);
+});
 }
 function onCardClick(e) {
-  if (lockBoard || isPaused) return; // YENİ: Oyun duraklatıldıysa tıklamayı engelle
-  const card = e.currentTarget;
-  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-  card.classList.add('flipped');
-  card.querySelector('span').style.opacity = '1';
-  if (!firstCard) {
-    firstCard = card;
-    return;
-  }
-  secondCard = card;
-  lockBoard = true;
-  moves++;
-  movesSpan.textContent = `Hamle: ${moves}`;
-  if (firstCard.dataset.emoji === secondCard.dataset.emoji) {
-    firstCard.classList.add('matched');
-    secondCard.classList.add('matched');
-    matchedPairs++;
-    playSound(audioMatch);
-    if (matchedPairs === START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT) {
-      clearInterval(timerInterval);
-      setTimeout(showLevelComplete, 600);
-      saveBestScores();
-    }
-    resetFlipped();
-  } else {
-    playSound(audioWrong);
-    setTimeout(() => {
-      firstCard.classList.remove('flipped');
-      secondCard.classList.remove('flipped');
-      firstCard.querySelector('span').style.opacity = '0';
-      secondCard.querySelector('span').style.opacity = '0';
-      resetFlipped();
-    }, 900);
-  }
+if (lockBoard || isPaused) return; // YENİ: Oyun duraklatıldıysa tıklamayı engelle
+const card = e.currentTarget;
+if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+card.classList.add('flipped');
+card.querySelector('span').style.opacity = '1';
+if (!firstCard) {
+firstCard = card;
+return;
+}
+secondCard = card;
+lockBoard = true;
+moves++;
+movesSpan.textContent = `Hamle: ${moves}`;
+if (firstCard.dataset.emoji === secondCard.dataset.emoji) {
+firstCard.classList.add('matched');
+secondCard.classList.add('matched');
+matchedPairs++;
+playSound(audioMatch);
+if (matchedPairs === START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT) {
+clearInterval(timerInterval);
+setTimeout(showLevelComplete, 600);
+saveBestScores();
+}
+resetFlipped();
+} else {
+playSound(audioWrong);
+setTimeout(() => {
+firstCard.classList.remove('flipped');
+secondCard.classList.remove('flipped');
+firstCard.querySelector('span').style.opacity = '0';
+secondCard.querySelector('span').style.opacity = '0';
+resetFlipped();
+}, 900);
+}
 }
 function resetFlipped() {
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
+firstCard = null;
+secondCard = null;
+lockBoard = false;
 }
 function getEnergyLimit(level) {
-  if (level < ENERGY_START_LEVEL) return null;
-  return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
+if (level < ENERGY_START_LEVEL) return null;
+return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
 }
 function startTimer() {
-  clearInterval(timerInterval);
-  timer = 0;
-  timerSpan.textContent = 'Süre: 0 sn';
-  runTimer();
+clearInterval(timerInterval);
+timer = 0;
+timerSpan.textContent = 'Süre: 0 sn';
+runTimer();
 }
 function resumeTimer() {
-  clearInterval(timerInterval);
-  runTimer();
+clearInterval(timerInterval);
+runTimer();
 }
 function runTimer() {
-    timerInterval = setInterval(() => {
-        timer++;
-        timerSpan.textContent = `Süre: ${timer} sn`;
-        checkEnergyTimeout();
-    }, 1000);
+timerInterval = setInterval(() => {
+timer++;
+timerSpan.textContent = `Süre: ${timer} sn`;
+checkEnergyTimeout();
+}, 1000);
 }
 function checkEnergyTimeout() {
-  if (currentLevel < ENERGY_START_LEVEL) return;
-  const limit = getEnergyLimit(currentLevel);
-  const currentTargetTime = limit * energyCheckMultiplier;
+if (currentLevel < ENERGY_START_LEVEL) return;
+const limit = getEnergyLimit(currentLevel);
+const currentTargetTime = limit * energyCheckMultiplier;
 
-  if (timer >= currentTargetTime) {
-    clearInterval(timerInterval);
-    if (energy > 0) {
-      showEnergyUseModal();
-    } else {
-      showOutOfEnergyModal();
-    }
-  }
+if (timer >= currentTargetTime) {
+clearInterval(timerInterval);
+if (energy > 0) {
+showEnergyUseModal();
+} else {
+showOutOfEnergyModal();
+}
+}
 }
 
 // --- SKOR YÖNETİMİ ---
 function updateBestTime() {
-  const best = bestTimes[currentLevel];
-  bestTimeSpan.textContent = 'En İyi: ' + (best ? best + ' sn' : '-');
+const best = bestTimes[currentLevel];
+bestTimeSpan.textContent = 'En İyi: ' + (best ? best + ' sn' : '-');
 }
 function updateScoreHistory() {
-  let html = '<b>Bölüm Skorları</b><ul>';
-  for (let i = 1; i <= unlockedLevel; i++) {
-    html += `<li>Bölüm ${i}: <span>${bestTimes[i] ? bestTimes[i] + ' sn' : '-'} / ${bestMoves[i] ? bestMoves[i] + ' hamle' : '-'}</span></li>`;
-  }
-  html += '</ul>';
-  scoreHistoryDiv.innerHTML = html;
+let html = '<b>Bölüm Skorları</b><ul>';
+for (let i = 1; i <= unlockedLevel; i++) {
+html += `<li>Bölüm ${i}: <span>${bestTimes[i] ? bestTimes[i] + ' sn' : '-'} / ${bestMoves[i] ? bestMoves[i] + ' hamle' : '-'}</span></li>`;
+}
+html += '</ul>';
+scoreHistoryDiv.innerHTML = html;
 }
 function saveBestScores() {
-  if (!bestTimes[currentLevel] || timer < bestTimes[currentLevel]) {
-    bestTimes[currentLevel] = timer;
-    localStorage.setItem('memoryGameBestTimes', JSON.stringify(bestTimes));
-  }
-  if (!bestMoves[currentLevel] || moves < bestMoves[currentLevel]) {
-    bestMoves[currentLevel] = moves;
-    localStorage.setItem('memoryGameBestMoves', JSON.stringify(bestMoves));
-  }
+if (!bestTimes[currentLevel] || timer < bestTimes[currentLevel]) {
+bestTimes[currentLevel] = timer;
+localStorage.setItem('memoryGameBestTimes', JSON.stringify(bestTimes));
+}
+if (!bestMoves[currentLevel] || moves < bestMoves[currentLevel]) {
+bestMoves[currentLevel] = moves;
+localStorage.setItem('memoryGameBestMoves', JSON.stringify(bestMoves));
+}
 }
 function showLevelComplete() {
-  playSound(audioLevel);
-  window.energyFullActive = false;
-  updateEnergyBar();
-  const nextButtonText = currentLevel < TOTAL_LEVELS ? 'Yeni Bölüm' : null;
-  showModal(
-    `🎉 Bölüm ${currentLevel} tamamlandı!`, `Süre: <b>${timer} sn</b><br>Hamle: <b>${moves}</b>`, nextButtonText,
-    () => {
-      if (currentLevel < TOTAL_LEVELS) {
-        if (unlockedLevel < currentLevel + 1) {
-          unlockedLevel = currentLevel + 1;
-          localStorage.setItem('memoryGameUnlockedLevel', unlockedLevel);
-        }
-        startGame(currentLevel + 1);
-      }
-    }
-  );
-  renderLevelButtons();
-  updateScoreHistory();
+playSound(audioLevel);
+window.energyFullActive = false;
+updateEnergyBar();
+const nextButtonText = currentLevel < TOTAL_LEVELS ? 'Yeni Bölüm' : null;
+showModal(
+`🎉 Bölüm ${currentLevel} tamamlandı!`, `Süre: <b>${timer} sn</b><br>Hamle: <b>${moves}</b>`, nextButtonText,
+() => {
+if (currentLevel < TOTAL_LEVELS) {
+if (unlockedLevel < currentLevel + 1) {
+unlockedLevel = currentLevel + 1;
+localStorage.setItem('memoryGameUnlockedLevel', unlockedLevel);
+}
+startGame(currentLevel + 1);
+}
+}
+);
+renderLevelButtons();
+updateScoreHistory();
 }
 
 // --- MODAL KUTU FONKSİYONLARI ---
 function showModal(title, content, buttonText, buttonCallback, secondaryText, secondaryCallback) {
-    hideModal();
-    const modalContainer = document.createElement('div');
-    modalContainer.id = 'dynamic-modal';
-    modalContainer.className = 'modal visible';
-    let buttonsHTML = '';
-    if (buttonText) {
-        buttonsHTML += `<button class="modal-btn primary">${buttonText}</button>`;
-    }
-    if (secondaryText) {
-        buttonsHTML += `<button class="modal-btn-secondary secondary">${secondaryText}</button>`;
-    }
-    modalContainer.innerHTML = `
-        <div class="modal-content">
-            <h2>${title}</h2>
-            <div>${content}</div>
-            <div style="margin-top:18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                ${buttonsHTML}
-            </div>
-        </div>`;
-    document.body.appendChild(modalContainer);
-    if (buttonText && buttonCallback) {
-        modalContainer.querySelector('.modal-btn.primary').onclick = () => { buttonCallback(); };
-    }
-    if (secondaryText && secondaryCallback) {
-        modalContainer.querySelector('.modal-btn-secondary.secondary').onclick = () => { secondaryCallback(); };
-    }
+hideModal();
+const modalContainer = document.createElement('div');
+modalContainer.id = 'dynamic-modal';
+modalContainer.className = 'modal visible';
+let buttonsHTML = '';
+if (buttonText) {
+buttonsHTML += `<button class="modal-btn primary">${buttonText}</button>`;
+}
+if (secondaryText) {
+buttonsHTML += `<button class="modal-btn-secondary secondary">${secondaryText}</button>`;
+}
+modalContainer.innerHTML = `
+       <div class="modal-content">
+           <h2>${title}</h2>
+           <div>${content}</div>
+           <div style="margin-top:18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+               ${buttonsHTML}
+           </div>
+       </div>`;
+document.body.appendChild(modalContainer);
+if (buttonText && buttonCallback) {
+modalContainer.querySelector('.modal-btn.primary').onclick = () => { buttonCallback(); };
+}
+if (secondaryText && secondaryCallback) {
+modalContainer.querySelector('.modal-btn-secondary.secondary').onclick = () => { secondaryCallback(); };
+}
 }
 function hideModal() {
-  const modal = document.querySelector('#dynamic-modal');
-  if (modal) modal.remove();
+const modal = document.querySelector('#dynamic-modal');
+if (modal) modal.remove();
 }
 
 // --- GÜNCELLENMİŞ ENERJİ AKIŞI FONKSİYONLARI ---
 function showEnergyUseModal() {
-  const limit = getEnergyLimit(currentLevel);
-  showModal('Enerjin tükeniyor!', `Bu bölümü ${limit * energyCheckMultiplier} sn içinde bitirmen gerekiyordu.<br>Devam etmek için 1 enerji kullanılsın mı? <br><br><b>Kalan Enerji: ${energy}</b>`, 'Evet, Kullan',
-    () => {
-      energy--;
-      energyCheckMultiplier++;
-      saveEnergy();
-      updateEnergyBar();
-      resumeTimer();
-      hideModal();
-    },
-    'Hayır',
-    () => {
-      hideModal();
-      setTimeout(() => {
-        showModal('Emin misin?', 'Enerji kullanmazsan bölüm yeniden başlayacak.', 'Yeniden Başlat',
-          () => { startGame(currentLevel); },
-          'Geri Dön',
-          () => {
-            hideModal();
-            setTimeout(showEnergyUseModal, 10);
-          }
-        );
-      }, 10);
-    }
-  );
+const limit = getEnergyLimit(currentLevel);
+showModal('Enerjin tükeniyor!', `Bu bölümü ${limit * energyCheckMultiplier} sn içinde bitirmen gerekiyordu.<br>Devam etmek için 1 enerji kullanılsın mı? <br><br><b>Kalan Enerji: ${energy}</b>`, 'Evet, Kullan',
+() => {
+energy--;
+energyCheckMultiplier++;
+saveEnergy();
+updateEnergyBar();
+resumeTimer();
+hideModal();
+},
+'Hayır',
+() => {
+hideModal();
+setTimeout(() => {
+showModal('Emin misin?', 'Enerji kullanmazsan bölüm yeniden başlayacak.', 'Yeniden Başlat',
+() => { startGame(currentLevel); },
+'Geri Dön',
+() => {
+hideModal();
+setTimeout(showEnergyUseModal, 10);
+}
+);
+}, 10);
+}
+);
 }
 function showOutOfEnergyModal() {
-    showModal(
-        'Enerji Bitti',
-        'Enerjin tükendi. Devam etmek için reklam izleyebilir veya bölümü yeniden başlatabilirsin.',
-        'Reklam İzle (Enerji Doldur)',
-        () => {
-            hideModal();
-            const adWindow = window.open('reklamizlendi.html', '_blank');
-            setTimeout(() => {
-                if (adWindow && !adWindow.closed) {
-                    adWindow.close();
-                }
-                energyCheckMultiplier++;
-                restoreEnergyAndContinue(true);
-            }, 3000);
-        },
-        'Yeniden Başlat',
-        () => {
-            hideModal();
-            setTimeout(() => {
-                showModal(
-                    'Emin misin?',
-                    'Mevcut bölüm yeniden başlayacak.',
-                    'Evet, Başlat',
-                    () => {
-                        startGame(currentLevel);
-                    },
-                    'Hayır, Geri Dön',
-                    () => {
-                        hideModal();
-                        setTimeout(showOutOfEnergyModal, 10);
-                    }
-                );
-            }, 10);
-        }
-    );
+showModal(
+'Enerji Bitti',
+'Enerjin tükendi. Devam etmek için reklam izleyebilir veya bölümü yeniden başlatabilirsin.',
+'Reklam İzle (Enerji Doldur)',
+() => {
+hideModal();
+const adWindow = window.open('reklamizlendi.html', '_blank');
+setTimeout(() => {
+if (adWindow && !adWindow.closed) {
+adWindow.close();
+}
+energyCheckMultiplier++;
+restoreEnergyAndContinue(true);
+}, 3000);
+},
+'Yeniden Başlat',
+() => {
+hideModal();
+setTimeout(() => {
+showModal(
+'Emin misin?',
+'Mevcut bölüm yeniden başlayacak.',
+'Evet, Başlat',
+() => {
+startGame(currentLevel);
+},
+'Hayır, Geri Dön',
+() => {
+hideModal();
+setTimeout(showOutOfEnergyModal, 10);
+}
+);
+}, 10);
+}
+);
 }
 
 // --- OYUNU BAŞLATMA ---
 document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('memoryGameTheme') || 'light';
-  applyTheme(savedTheme);
-  updateSoundButton();
-  unlockedLevel = parseInt(localStorage.getItem('memoryGameUnlockedLevel') || '1', 10);
-  if (isNaN(unlockedLevel) || unlockedLevel < 1) unlockedLevel = 1;
-  setupToggles();
-  renderLevelButtons();
-  updateScoreHistory();
-  
-  const startModal = document.getElementById('start-modal');
-  const startGameBtn = document.getElementById('start-game-btn');
-  
-  startGameBtn.onclick = () => {
-    startModal.classList.remove('visible');
-    startGame(1);
-  };
+const savedTheme = localStorage.getItem('memoryGameTheme') || 'light';
+applyTheme(savedTheme);
+updateSoundButton();
+unlockedLevel = parseInt(localStorage.getItem('memoryGameUnlockedLevel') || '1', 10);
+if (isNaN(unlockedLevel) || unlockedLevel < 1) unlockedLevel = 1;
+setupToggles();
+renderLevelButtons();
+updateScoreHistory();
 
-   // YENİ: Menü butonu tıklama olayı (3 saniye sonra kapanacak şekilde güncellendi)
+const startModal = document.getElementById('start-modal');
+const startGameBtn = document.getElementById('start-game-btn');
+
+startGameBtn.onclick = () => {
+startModal.classList.remove('visible');
+startGame(1);
+};
+
+  // YENİ: Menü butonu tıklama olayı
+  // YENİ: Menü butonu tıklama olayı (3 saniye sonra kapanacak şekilde güncellendi)
   menuBtn.onclick = function() {
     pauseGame(); // Oyunu duraklat
     const menuWindow = window.open('menu.html', '_blank'); // Menüyü yeni sekmede aç ve referansını sakla
@@ -913,17 +914,17 @@ document.addEventListener('DOMContentLoaded', () => {
       if (menuWindow && !menuWindow.closed) {
         menuWindow.close(); // Pencereyi kapat
       }
-    }, 10); 
+    }, 10); // 3000 milisaniye = 3 saniye
   };
 
-  // YENİ: Sekme görünürlüğü değiştiğinde olayı dinle
-  document.addEventListener('visibilitychange', () => {
-    // Eğer sekme görünür hale geldiyse VE oyun duraklatılmış durumdaysa
-    if (document.visibilityState === 'visible' && isPaused) {
-        showResumeModal(); // "Devam Et" penceresini göster
-    }
-  });
+// YENİ: Sekme görünürlüğü değiştiğinde olayı dinle
+document.addEventListener('visibilitychange', () => {
+// Eğer sekme görünür hale geldiyse VE oyun duraklatılmış durumdaysa
+if (document.visibilityState === 'visible' && isPaused) {
+showResumeModal(); // "Devam Et" penceresini göster
+}
 });
-  </script>
+});
+</script>
 </body>
 </html>
