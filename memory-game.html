@@ -67,7 +67,6 @@ body {
     gap: 8px;
     z-index: 10;
     right: 191px;
-    bottom: 192px;
 }
 .top-buttons {
   position: absolute;
@@ -159,9 +158,10 @@ body {
   background: var(--header-hover-bg);
 }
 .toggle-arrow {
-  font-size: 1.1em;
-  transition: transform 0.2s;
-  display: inline-block;
+    font-size: 1.1em;
+    transition: transform 0.2s;
+    display: inline-block;
+    bottom: auto;
 }
 .toggle-header.open .toggle-arrow {
   transform: rotate(90deg);
