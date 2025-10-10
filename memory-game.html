@@ -1387,10 +1387,33 @@ function updateLanguage() {
 }
 
 function updateGameInfoText() {
+  // Zaman ve hamle birimlerini dil çevirilerinden al
+  const timeSuffix = currentLanguage === 'en' ? ' sec' : 
+                    currentLanguage === 'tr' ? ' sn' : 
+                    currentLanguage === 'zh' ? ' 秒' :
+                    currentLanguage === 'es' ? ' seg' :
+                    currentLanguage === 'fr' ? ' sec' :
+                    currentLanguage === 'de' ? ' Sek' :
+                    currentLanguage === 'ja' ? ' 秒' :
+                    currentLanguage === 'ko' ? ' 초' :
+                    currentLanguage === 'ru' ? ' сек' :
+                    currentLanguage === 'pt' ? ' seg' :
+                    currentLanguage === 'it' ? ' sec' :
+                    currentLanguage === 'ar' ? ' ثانية' :
+                    currentLanguage === 'hi' ? ' सेकंड' :
+                    currentLanguage === 'id' ? ' detik' :
+                    currentLanguage === 'th' ? ' วินาที' :
+                    currentLanguage === 'vi' ? ' giây' :
+                    currentLanguage === 'nl' ? ' sec' :
+                    currentLanguage === 'pl' ? ' sek' :
+                    currentLanguage === 'sv' ? ' sek' :
+                    currentLanguage === 'uk' ? ' сек' : ' sec';
+  
   timerSpan.textContent = t('time', timer);
   movesSpan.textContent = t('moves', moves);
+  
   const best = bestTimes[currentLevel];
-  bestTimeSpan.textContent = t('best', best ? best + ' ' + (currentLanguage === 'en' ? 'sec' : 'sn') : '-');
+  bestTimeSpan.textContent = t('best', best ? best + timeSuffix : '-');
 }
 
 function showLanguageModal() {
@@ -1743,8 +1766,49 @@ function updateBestTime() {
 function updateScoreHistory() {
   let html = '<b>' + t('level_scores') + '</b><ul>';
   for (let i = 1; i <= unlockedLevel; i++) {
-    const timeSuffix = currentLanguage === 'en' ? ' sec' : ' sn';
-    const movesText = currentLanguage === 'en' ? ' moves' : ' hamle';
+    // Dil çevirilerini kullanarak zaman ve hamle birimlerini al
+    const timeSuffix = currentLanguage === 'en' ? ' sec' : 
+                      currentLanguage === 'tr' ? ' sn' : 
+                      currentLanguage === 'zh' ? ' 秒' :
+                      currentLanguage === 'es' ? ' seg' :
+                      currentLanguage === 'fr' ? ' sec' :
+                      currentLanguage === 'de' ? ' Sek' :
+                      currentLanguage === 'ja' ? ' 秒' :
+                      currentLanguage === 'ko' ? ' 초' :
+                      currentLanguage === 'ru' ? ' сек' :
+                      currentLanguage === 'pt' ? ' seg' :
+                      currentLanguage === 'it' ? ' sec' :
+                      currentLanguage === 'ar' ? ' ثانية' :
+                      currentLanguage === 'hi' ? ' सेकंड' :
+                      currentLanguage === 'id' ? ' detik' :
+                      currentLanguage === 'th' ? ' วินาที' :
+                      currentLanguage === 'vi' ? ' giây' :
+                      currentLanguage === 'nl' ? ' sec' :
+                      currentLanguage === 'pl' ? ' sek' :
+                      currentLanguage === 'sv' ? ' sek' :
+                      currentLanguage === 'uk' ? ' сек' : ' sec';
+    
+    const movesText = currentLanguage === 'en' ? ' moves' : 
+                     currentLanguage === 'tr' ? ' hamle' : 
+                     currentLanguage === 'zh' ? ' 移动' :
+                     currentLanguage === 'es' ? ' movimientos' :
+                     currentLanguage === 'fr' ? ' mouvements' :
+                     currentLanguage === 'de' ? ' Züge' :
+                     currentLanguage === 'ja' ? ' 移動' :
+                     currentLanguage === 'ko' ? ' 이동' :
+                     currentLanguage === 'ru' ? ' ходы' :
+                     currentLanguage === 'pt' ? ' movimentos' :
+                     currentLanguage === 'it' ? ' mosse' :
+                     currentLanguage === 'ar' ? ' حركات' :
+                     currentLanguage === 'hi' ? ' चालें' :
+                     currentLanguage === 'id' ? ' langkah' :
+                     currentLanguage === 'th' ? ' การเคลื่อนไหว' :
+                     currentLanguage === 'vi' ? ' lượt di chuyển' :
+                     currentLanguage === 'nl' ? ' zetten' :
+                     currentLanguage === 'pl' ? ' ruchy' :
+                     currentLanguage === 'sv' ? ' drag' :
+                     currentLanguage === 'uk' ? ' ходи' : ' moves';
+    
     html += `<li>${t('level')} ${i}: <span>${bestTimes[i] ? bestTimes[i] + timeSuffix : '-'} / ${bestMoves[i] ? bestMoves[i] + movesText : '-'}</span></li>`;
   }
   html += '</ul>';
