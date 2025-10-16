@@ -1,2047 +1,1659 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hafıza Kart Oyunu</title>
-<style>
-/* CSS kodu aynı kalıyor */
-:root {
-  --bg-main: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
-  --bg-container: #fff;
-  --text-color: #333;
-  --header-bg: #e0e0e0;
-  --header-hover-bg: #b2dfdb;
-  --button-bg: #e0e0e0;
-  --button-hover-bg: #ffd54f;
-  --card-bg: #b2dfdb;
-  --card-flipped-bg: #fffde7;
-  --card-matched-bg: #ffd54f;
-  --shadow-color: rgba(0,0,0,0.13);
-  --modal-bg: #fff;
-  --modal-text: #333;
-  --locked-bg: #bdbdbd;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hafıza Kart Oyunu</title>
+    <style>
+        :root {
+            --bg-main: linear-gradient(135deg, #f0f0f0 60%, #b2dfdb 100%);
+            --bg-container: #fff;
+            --text-color: #333;
+            --header-bg: #e0e0e0;
+            --header-hover-bg: #b2dfdb;
+            --button-bg: #e0e0e0;
+            --button-hover-bg: #ffd54f;
+            --card-bg: #b2dfdb;
+            --card-flipped-bg: #fffde7;
+            --card-matched-bg: #ffd54f;
+            --shadow-color: rgba(0,0,0,0.13);
+            --modal-bg: #fff;
+            --modal-text: #333;
+            --locked-bg: #bdbdbd;
+            --energy-color: #ff5252;
+        }
 
-body.dark-mode {
-  --bg-main: #121212;
-  --bg-container: #1e1e1e;
-  --text-color: #e0e0e0;
-  --header-bg: #333;
-  --header-hover-bg: #424242;
-  --button-bg: #424242;
-  --button-hover-bg: #555;
-  --card-bg: #2c3e50;
-  --card-flipped-bg: #4a6fa5;
-  --card-matched-bg: #f39c12;
-  --shadow-color: rgba(0,0,0,0.5);
-  --modal-bg: #2a2a2a;
-  --modal-text: #e0e0e0;
-  --locked-bg: #555;
-}
+        body.dark-mode {
+            --bg-main: #121212;
+            --bg-container: #1e1e1e;
+            --text-color: #e0e0e0;
+            --header-bg: #333;
+            --header-hover-bg: #424242;
+            --button-bg: #424242;
+            --button-hover-bg: #555;
+            --card-bg: #2c3e50;
+            --card-flipped-bg: #4a6fa5;
+            --card-matched-bg: #f39c12;
+            --shadow-color: rgba(0,0,0,0.5);
+            --modal-bg: #2a2a2a;
+            --modal-text: #e0e0e0;
+            --locked-bg: #555;
+            --energy-color: #ff6b6b;
+        }
 
-body {
-  background: var(--bg-main);
-  color: var(--text-color);
-  font-family: 'Segoe UI', sans-serif;
-  margin: 0;
-  padding: 0;
-  transition: background 0.3s, color 0.3s;
-}
-.game-container {
-  max-width: 440px;
-  margin: 32px auto;
-  background: var(--bg-container);
-  border-radius: 16px;
-  box-shadow: 0 2px 16px var(--shadow-color);
-  padding: 18px 8px 28px 8px;
-  text-align: center;
-  position: relative;
-  transition: background 0.3s;
-}
-.top-left-buttons {
-    position: absolute;
-    top: 10px;
-    left: 16px;
-    display: flex;
-    gap: 8px;
-    z-index: 10;
-    right: 191px;
-}
-.top-buttons {
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  display: flex;
-  gap: 8px;
-  z-index: 10;
-}
-#menu-btn {
-  background: var(--button-bg);
-  color: var(--text-color);
-  border: none;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3em;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-#sound-toggle, #restart-btn, #theme-toggle, #language-toggle {
-  background: var(--button-bg);
-  color: var(--text-color);
-  border: none;
-  border-radius: 50%;
-  width: 38px;
-  height: 38px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3em;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-#sound-toggle.active {
-  background: #4caf50;
-  color: #fff;
-}
-#restart-btn:hover, #theme-toggle:hover, #menu-btn:hover, #language-toggle:hover {
-  background: var(--button-hover-bg);
-}
-.game-container h1 {
-  padding: 0 50px;
-}
-.energy-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  margin-bottom: 6px;
-  margin-top: 2px;
-}
-.energy-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1em;
-  color: #ff5252;
-  border: 2px solid #ff5252;
-  transition: background 0.2s, color 0.2s;
-}
-.energy-icon.full {
-  background: #ff5252;
-  color: #fff;
-}
-.toggle-header {
-  font-weight: bold;
-  font-size: 1.08rem;
-  background: var(--header-bg);
-  border-radius: 7px;
-  margin: 8px 0 2px 0;
-  padding: 7px 0 7px 0;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.toggle-header:hover {
-  background: var(--header-hover-bg);
-}
-.toggle-arrow {
-    font-size: 1.1em;
-    transition: transform 0.2s;
-    display: inline-block;
-    bottom: auto;
-}
-.toggle-header.open .toggle-arrow {
-  transform: rotate(90deg);
-}
-.toggle-content {
-  display: none;
-  margin-bottom: 6px;
-}
-.toggle-content.open {
-  display: block;
-}
-#level-select {
-  margin-bottom: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 4px;
-}
-#level-select button {
-  margin: 2px 2px;
-  padding: 7px 13px;
-  border: none;
-  border-radius: 6px;
-  background: var(--button-bg);
-  color: var(--text-color);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-  min-width: 38px;
-}
-#level-select button.active, #level-select button:focus {
-  background: #4caf50;
-  color: #fff;
-}
-#level-select button.locked {
-  background: var(--locked-bg);
-  color: #fff;
-  cursor: not-allowed;
-}
-#level-select button.unlocked {
-  background: var(--button-bg);
-  color: var(--text-color);
-  cursor: pointer;
-}
-#level-select button.unlocked:hover {
-  background: var(--button-hover-bg);
-}
-#game-info {
-  margin-bottom: 10px;
-  font-size: 1.08rem;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 8px;
-}
-#game-info span {
-  min-width: 90px;
-  display: inline-block;
-}
-#game-board {
-  display: grid;
-  grid-gap: 10px;
-  justify-content: center;
-  margin: 16px 0 10px 0;
-}
-.card {
-  background: var(--card-bg);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  cursor: pointer;
-  user-select: none;
-  transition: background 0.2s, transform 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-}
-.card.flipped {
-  background: var(--card-flipped-bg);
-  cursor: default;
-  transform: scale(1.08);
-}
-.card.matched {
-  background: var(--card-matched-bg);
-  transform: scale(1.08);
-}
-#message {
-  margin-top: 16px;
-  font-size: 1.1rem;
-  color: #388e3c;
-  min-height: 24px;
-}
-#score-history {
-  margin: 10px 0 0 0;
-  font-size: 0.98rem;
-  color: var(--text-color);
-}
-#score-history ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-#score-history li {
-  margin: 2px 0;
-}
-.modal {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.35);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s;
-}
-.modal.visible {
-  display: flex;
-}
-@keyframes fadeIn {
-  from { opacity: 0; } to { opacity: 1; }
-}
-.modal-content {
-  background: var(--modal-bg);
-  color: var(--modal-text);
-  border-radius: 16px;
-  box-shadow: 0 2px 24px rgba(0,0,0,0.18);
-  padding: 32px 24px 24px 24px;
-  min-width: 240px;
-  max-width: 90vw;
-  text-align: center;
-  position: relative;
-  animation: popIn 0.3s;
-  transition: background 0.3s, color 0.3s;
-}
-@keyframes popIn {
-  from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; }
-}
-.modal-content h2 {
-  margin-top: 0;
-  color: #388e3c;
-  font-size: 1.5em;
-}
-.modal-content .modal-btn, .modal-content .modal-btn-secondary {
-  margin-top: 18px;
-  padding: 10px 28px;
-  font-size: 1.1em;
-  background: #4caf50;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  margin-right: 10px;
-}
-.modal-content .modal-btn-secondary {
-  background: #bdbdbd;
-  color: #333;
-  margin-right: 0;
-}
-.modal-content .modal-btn:hover {
-  background: #388e3c;
-}
-.modal-content .modal-btn-secondary:hover {
-  background: #888;
-  color: #fff;
-}
-.language-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  max-height: 300px;
-  overflow-y: auto;
-  margin: 15px 0;
-}
-.language-option {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--button-bg);
-}
-.language-option:hover {
-  background: var(--button-hover-bg);
-}
-.language-option.selected {
-  background: #4caf50;
-  color: white;
-  border-color: #388e3c;
-}
-@media (max-width: 600px) {
-  .game-container {
-    max-width: 99vw;
-    padding: 6px 1vw 16px 1vw;
-  }
-  #game-board {
-    grid-gap: 2vw;
-  }
-  .card {
-    font-size: 6vw;
-  }
-  .modal-content {
-    padding: 18px 4vw 18px 4vw;
-  }
-  .language-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
+        body {
+            background: var(--bg-main);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            max-width: 500px;
+            width: 95%;
+            margin: 20px auto;
+            background: var(--bg-container);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--header-bg);
+        }
+
+        .game-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: var(--button-bg);
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .control-btn:hover {
+            background: var(--button-hover-bg);
+            transform: scale(1.05);
+        }
+
+        .control-btn.active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .energy-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 8px;
+            background: var(--header-bg);
+            border-radius: 20px;
+            font-weight: bold;
+            flex-wrap: wrap;
+        }
+
+        .energy-icons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .energy-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            color: var(--energy-color);
+            border: 2px solid var(--energy-color);
+            transition: all 0.3s;
+        }
+
+        .energy-icon.full {
+            background: var(--energy-color);
+            color: #fff;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            gap: 10px;
+        }
+
+        .game-info span {
+            background: var(--header-bg);
+            padding: 8px 12px;
+            border-radius: 20px;
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-board {
+            display: grid;
+            grid-gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            aspect-ratio: 1;
+            position: relative;
+            overflow: hidden;
+            min-height: 40px;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
+        .card.flipped {
+            background: var(--card-flipped-bg);
+            cursor: default;
+            transform: rotateY(180deg) scale(1.03);
+        }
+
+        .card.matched {
+            background: var(--card-matched-bg);
+            transform: scale(1.03);
+            cursor: default;
+        }
+
+        .card-content {
+            transition: opacity 0.3s;
+            font-size: 2rem;
+        }
+
+        .card:not(.flipped):not(.matched) .card-content {
+            opacity: 0;
+        }
+
+        .message {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 24px;
+            color: #388e3c;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.visible {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; } to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--modal-bg);
+            color: var(--modal-text);
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            padding: 30px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            animation: popIn 0.3s;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #388e3c;
+            font-size: 1.8rem;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            min-width: 100px;
+        }
+
+        .modal-btn:hover {
+            background: #388e3c;
+        }
+
+        .modal-btn.secondary {
+            background: #bdbdbd;
+            color: #333;
+        }
+
+        .modal-btn.secondary:hover {
+            background: #888;
+            color: #fff;
+        }
+
+        .modal-btn.warning {
+            background: #ff9800;
+            color: white;
+        }
+
+        .modal-btn.warning:hover {
+            background: #f57c00;
+        }
+
+        .intro-text {
+            margin: 20px 0;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .language-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .language-option {
+            padding: 12px;
+            border: 1px solid var(--shadow-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--button-bg);
+            text-align: center;
+        }
+
+        .language-option:hover {
+            background: var(--button-hover-bg);
+        }
+
+        .language-option.selected {
+            background: #4caf50;
+            color: white;
+            border-color: #388e3c;
+        }
+
+        .ad-container {
+            background: #f5f5f5;
+            border: 2px dashed #ccc;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .ad-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff9800;
+            margin: 10px 0;
+        }
+
+        .levels-modal-content {
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .level-select-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: var(--button-bg);
+            color: var(--text-color);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 50px;
+        }
+
+        .level-select-btn.active {
+            background: #4caf50;
+            color: white;
+        }
+
+        .level-select-btn.locked {
+            background: var(--locked-bg);
+            color: #fff;
+            cursor: not-allowed;
+        }
+
+        .level-select-btn:hover:not(.locked) {
+            background: var(--button-hover-bg);
+            transform: scale(1.05);
+        }
+
+        .scores-modal-content {
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .score-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--shadow-color);
+        }
+
+        .score-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 15px 10px;
+            }
+            
+            .game-board {
+                grid-gap: 4px;
+            }
+            
+            .card {
+                font-size: 1.6rem;
+                min-height: 35px;
+            }
+
+            .card-content {
+                font-size: 1.8rem;
+            }
+            
+            .game-info {
+                flex-direction: row;
+                gap: 8px;
+            }
+            
+            .game-info span {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+                min-width: 0;
+            }
+            
+            .language-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-buttons {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                min-width: 100px;
+            }
+            
+            .levels-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 400px) {
+            .card {
+                font-size: 1.4rem;
+                min-height: 30px;
+            }
+
+            .card-content {
+                font-size: 1.6rem;
+            }
+            
+            .energy-bar {
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .game-info {
+                gap: 5px;
+            }
+            
+            .game-info span {
+                padding: 5px 6px;
+                font-size: 0.85rem;
+            }
+            
+            .levels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .control-btn {
+                width: 35px;
+                height: 35px;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .game-info {
+                flex-wrap: nowrap;
+            }
+            
+            .game-info span {
+                font-size: 0.8rem;
+                padding: 4px 5px;
+            }
+            
+            .controls {
+                gap: 5px;
+            }
+            
+            .control-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+
+            .card {
+                min-height: 28px;
+            }
+
+            .card-content {
+                font-size: 1.4rem;
+            }
+            
+            .levels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="game-container">
+        <div class="game-header">
+            <div class="game-title" id="game-title">Hafıza Kart Oyunu</div>
+            <div class="controls">
+                <div class="control-row">
+                    <button id="language-toggle" class="control-btn" title="Dil Değiştir">🌐</button>
+                    <button id="theme-toggle" class="control-btn" title="Tema Değiştir">🌙</button>
+                    <button id="sound-toggle" class="control-btn active" title="Ses Aç/Kapat">🔊</button>
+                </div>
+                <div class="control-row">
+                    <button id="levels-btn" class="control-btn" title="Bölüm Seç">📂</button>
+                    <button id="scores-btn" class="control-btn" title="Skorlar">🏆</button>
+                    <button id="restart-btn" class="control-btn" title="Yeniden Başlat">⟳</button>
+                </div>
+            </div>
+        </div>
 
-<div id="start-modal" class="modal visible">
-  <div class="modal-content">
-    <h2 id="start-title">Memory Game</h2>
-    <button id="start-game-btn" class="modal-btn" data-key="start_game">Start Game</button>
-  </div>
-</div>
+        <div class="energy-bar" id="energy-bar" style="display: none;">
+            <span id="energy-label">Enerji:</span>
+            <div class="energy-icons" id="energy-icons"></div>
+        </div>
 
-<div class="game-container">
-  <div class="top-left-buttons">
-    <a style="font-size: 20px; font-weight: bold;" id="game-title">Find the Same Cards!</a>
-  </div>
-  <br><br><br>
-  <div class="top-buttons">
-    <button id="language-toggle" title="Change Language">🌐</button>
-    <button id="theme-toggle" title="Change Theme">🌙</button>
-    <button id="sound-toggle" title="Sound On/Off">🔊</button>
-    <button id="restart-btn" title="Restart Level">⟳</button>
-  </div>
-  <br>
+        <div class="game-info">
+            <span id="timer">Süre: 0 sn</span>
+            <span id="moves">Hamle: 0</span>
+            <span id="best">En İyi: -</span>
+        </div>
 
-  <div class="energy-bar" id="energy-bar" style="display:none;"></div>
-  <div class="toggle-header" id="toggle-levels-header"><span class="toggle-arrow">▶</span> <span data-key="levels">Levels</span></div>
-  <div class="toggle-content" id="toggle-levels-content">
-    <div id="level-select"></div>
-  </div>
-  <div id="game-info">
-    <span id="timer" data-key="time">Time: 0 sec</span>
-    <span id="moves" data-key="moves">Moves: 0</span>
-    <span id="best-time" data-key="best">Best: -</span>
-  </div>
-  <div id="game-board"></div>
-  <div id="message"></div>
-  <div class="toggle-header" id="toggle-scores-header"><span class="toggle-arrow">▶</span> <span data-key="scores">Scores</span></div>
-  <div class="toggle-content" id="toggle-scores-content">
-    <div id="score-history"></div>
-  </div>
-</div>
-<audio id="audio-match" src="bulundu.mp3" preload="auto"></audio>
-<audio id="audio-wrong"src="hata.mp3" preload="auto"></audio>
-<audio id="audio-level" src="bitti.mp3" preload="auto"></audio>
+        <div class="game-board" id="game-board"></div>
 
-<script>
-// --- DEĞİŞKENLER VE SABİTLER ---
-const TOTAL_LEVELS = 25;
-const START_PAIRS = 6;
-const PAIR_INCREMENT = 1;
-const ENERGY_START_LEVEL = 5;
-const ENERGY_MAX = 3;
-const ENERGY_BASE_LIMIT = 25;
-const ENERGY_INC_PER_LEVEL = 7;
-const ENERGY_STORAGE_KEY = 'memoryGameEnergy';
-const ENERGY_LAST_LEVEL_KEY = 'memoryGameEnergyLevel';
-const emojis = [
-  '🍎','🍌','🍇','🍉','🍒','🍋','🍓','🍑','🍍','🥝','🥑','🍆','🥕','🌽','🍔','🍟','🍕','🍩','🍪','🍫','🍿','🍭','🍬','🍰','🧁','🍦','🍤','🍣','🍙','🍚',
-  '🍜','🍲','🍛','🍱','🍧','🍨','🍮','🍯','🍵','🥨','🥐','🥯','🥞','🥩','🥓','🥚','🥗','🥙','🥪','🥫','🥟','🥠','🥡','🥤','🧃','🧊','🍺','🍻','🍷','🥂'
-];
+        <div class="message" id="message"></div>
+    </div>
 
-// Dil çevirileri (TÜM DİLLER EKLENDİ)
-const translations = {
-  en: {
-    start_title: "Memory Game",
-    start_game: "Start Game",
-    game_title: "Find the Same Cards!",
-    levels: "Levels",
-    time: "Time: {0} sec",
-    moves: "Moves: {0}",
-    best: "Best: {0}",
-    scores: "Scores",
-    level_scores: "Level Scores",
-    yes: "Yes",
-    no: "No",
-    restart_level: "Restart Level",
-    are_you_sure: "Are you sure?",
-    restart_confirm: "Do you want to restart the level?",
-    level_complete: "🎉 Level {0} completed!",
-    time_taken: "Time: <b>{0} sec</b><br>Moves: <b>{1}</b>",
-    next_level: "Next Level",
-    new_level: "New Level",
-    energy_low: "Your energy is running low!",
-    energy_time_limit: "You need to complete this level in {0} sec.<br>Use 1 energy to continue? <br><br><b>Remaining Energy: {1}</b>",
-    use_energy: "Yes, Use",
-    no_energy: "No",
-    out_of_energy: "Out of Energy",
-    out_of_energy_desc: "You're out of energy. Watch an ad to continue or restart the level.",
-    watch_ad: "Watch Ad (Refill Energy)",
-    restart: "Restart",
-    sure_restart: "Are you sure?",
-    restart_desc: "The current level will restart.",
-    yes_restart: "Yes, Start",
-    back: "Back",
-    game_paused: "Game Paused",
-    resume_game: "Resume Game",
-    resume_desc: "You're back to the game. Continue when you're ready.",
-    select_language: "Select Language",
-    energy: "Energy",
-    energy_full: "Your energy is full!",
-    light_theme: "Light Theme",
-    dark_theme: "Dark Theme",
-    sound_on: "Sound On",
-    sound_off: "Sound Off",
-    level: "Level",
-    confirm: "OK"
-  },
-  tr: {
-    start_title: "Hafıza Oyunu",
-    start_game: "Oyunu Başlat",
-    game_title: "Aynı Kartları Bul!",
-    levels: "Bölümler",
-    time: "Süre: {0} sn",
-    moves: "Hamle: {0}",
-    best: "En İyi: {0}",
-    scores: "Skorlar",
-    level_scores: "Bölüm Skorları",
-    yes: "Evet",
-    no: "Hayır",
-    restart_level: "Bölümü Yeniden Başlat",
-    are_you_sure: "Emin misiniz?",
-    restart_confirm: "Bölümü yeniden başlatmak istiyor musunuz?",
-    level_complete: "🎉 Bölüm {0} tamamlandı!",
-    time_taken: "Süre: <b>{0} sn</b><br>Hamle: <b>{1}</b>",
-    next_level: "Yeni Bölüm",
-    new_level: "Yeni Bölüm",
-    energy_low: "Enerjin tükeniyor!",
-    energy_time_limit: "Bu bölümü {0} sn içinde bitirmen gerekiyordu.<br>Devam etmek için 1 enerji kullanılsın mı? <br><br><b>Kalan Enerji: {1}</b>",
-    use_energy: "Evet, Kullan",
-    no_energy: "Hayır",
-    out_of_energy: "Enerji Bitti",
-    out_of_energy_desc: "Enerjin tükendi. Devam etmek için reklam izleyebilir veya bölümü yeniden başlatabilirsin.",
-    watch_ad: "Reklam İzle (Enerji Doldur)",
-    restart: "Yeniden Başlat",
-    sure_restart: "Emin misin?",
-    restart_desc: "Mevcut bölüm yeniden başlayacak.",
-    yes_restart: "Evet, Başlat",
-    back: "Geri Dön",
-    game_paused: "Oyun Duraklatıldı",
-    resume_game: "Oyuna Devam Et",
-    resume_desc: "Oyuna geri döndün. Hazır olduğunda devam et.",
-    select_language: "Dil Seçin",
-    energy: "Enerji",
-    energy_full: "Enerjin fullendi!",
-    light_theme: "Açık Tema",
-    dark_theme: "Koyu Tema",
-    sound_on: "Sesi Aç",
-    sound_off: "Sesi Kapat",
-    level: "Bölüm",
-    confirm: "Tamam"
-  },
-  zh: {
-    start_title: "记忆游戏",
-    start_game: "开始游戏",
-    game_title: "找出相同的卡片！",
-    levels: "关卡",
-    time: "时间: {0} 秒",
-    moves: "移动: {0}",
-    best: "最佳: {0}",
-    scores: "分数",
-    level_scores: "关卡分数",
-    yes: "是",
-    no: "否",
-    restart_level: "重新开始关卡",
-    are_you_sure: "你确定吗？",
-    restart_confirm: "你想重新开始这一关吗？",
-    level_complete: "🎉 第 {0} 关完成！",
-    time_taken: "时间: <b>{0} 秒</b><br>移动: <b>{1}</b>",
-    next_level: "下一关",
-    new_level: "新关卡",
-    energy_low: "你的能量不足了！",
-    energy_time_limit: "你需要在 {0} 秒内完成这一关。<br>使用 1 点能量继续吗？<br><br><b>剩余能量: {1}</b>",
-    use_energy: "是，使用",
-    no_energy: "否",
-    out_of_energy: "能量耗尽",
-    out_of_energy_desc: "你的能量耗尽了。观看广告继续或重新开始关卡。",
-    watch_ad: "观看广告（补充能量）",
-    restart: "重新开始",
-    sure_restart: "你确定吗？",
-    restart_desc: "当前关卡将重新开始。",
-    yes_restart: "是，开始",
-    back: "返回",
-    game_paused: "游戏已暂停",
-    resume_game: "继续游戏",
-    resume_desc: "你已回到游戏。准备好时继续。",
-    select_language: "选择语言",
-    energy: "能量",
-    energy_full: "你的能量已满！",
-    light_theme: "浅色主题",
-    dark_theme: "深色主题",
-    sound_on: "开启声音",
-    sound_off: "关闭声音",
-    level: "关卡",
-    confirm: "确定"
-  },
-  es: {
-    start_title: "Juego de Memoria",
-    start_game: "Iniciar Juego",
-    game_title: "¡Encuentra las Cartas Iguales!",
-    levels: "Niveles",
-    time: "Tiempo: {0} seg",
-    moves: "Movimientos: {0}",
-    best: "Mejor: {0}",
-    scores: "Puntuaciones",
-    level_scores: "Puntuaciones de Nivel",
-    yes: "Sí",
-    no: "No",
-    restart_level: "Reiniciar Nivel",
-    are_you_sure: "¿Estás seguro?",
-    restart_confirm: "¿Quieres reiniciar el nivel?",
-    level_complete: "🎉 ¡Nivel {0} completado!",
-    time_taken: "Tiempo: <b>{0} seg</b><br>Movimientos: <b>{1}</b>",
-    next_level: "Siguiente Nivel",
-    new_level: "Nuevo Nivel",
-    energy_low: "¡Tu energía se está agotando!",
-    energy_time_limit: "Necesitas completar este nivel en {0} seg.<br>¿Usar 1 energía para continuar? <br><br><b>Energía Restante: {1}</b>",
-    use_energy: "Sí, Usar",
-    no_energy: "No",
-    out_of_energy: "Sin Energía",
-    out_of_energy_desc: "Te has quedado sin energía. Mira un anuncio para continuar o reinicia el nivel.",
-    watch_ad: "Ver Anuncio (Recargar Energía)",
-    restart: "Reiniciar",
-    sure_restart: "¿Estás seguro?",
-    restart_desc: "El nivel actual se reiniciará.",
-    yes_restart: "Sí, Iniciar",
-    back: "Volver",
-    game_paused: "Juego Pausado",
-    resume_game: "Reanudar Juego",
-    resume_desc: "Has vuelto al juego. Continúa cuando estés listo.",
-    select_language: "Seleccionar Idioma",
-    energy: "Energía",
-    energy_full: "¡Tu energía está llena!",
-    light_theme: "Tema Claro",
-    dark_theme: "Tema Oscuro",
-    sound_on: "Sonido Activado",
-    sound_off: "Sonido Desactivado",
-    level: "Nivel",
-    confirm: "Aceptar"
-  },
-  fr: {
-    start_title: "Jeu de Mémoire",
-    start_game: "Commencer le Jeu",
-    game_title: "Trouvez les Cartes Identiques !",
-    levels: "Niveaux",
-    time: "Temps: {0} sec",
-    moves: "Mouvements: {0}",
-    best: "Meilleur: {0}",
-    scores: "Scores",
-    level_scores: "Scores des Niveaux",
-    yes: "Oui",
-    no: "Non",
-    restart_level: "Redémarrer le Niveau",
-    are_you_sure: "Êtes-vous sûr ?",
-    restart_confirm: "Voulez-vous redémarrer le niveau ?",
-    level_complete: "🎉 Niveau {0} terminé !",
-    time_taken: "Temps: <b>{0} sec</b><br>Mouvements: <b>{1}</b>",
-    next_level: "Niveau Suivant",
-    new_level: "Nouveau Niveau",
-    energy_low: "Votre énergie est faible !",
-    energy_time_limit: "Vous devez terminer ce niveau en {0} sec.<br>Utiliser 1 énergie pour continuer ? <br><br><b>Énergie Restante: {1}</b>",
-    use_energy: "Oui, Utiliser",
-    no_energy: "Non",
-    out_of_energy: "Plus d'Énergie",
-    out_of_energy_desc: "Vous n'avez plus d'énergie. Regardez une publicité pour continuer ou redémarrez le niveau.",
-    watch_ad: "Voir une Pub (Recharger l'Énergie)",
-    restart: "Redémarrer",
-    sure_restart: "Êtes-vous sûr ?",
-    restart_desc: "Le niveau actuel va redémarrer.",
-    yes_restart: "Oui, Démarrer",
-    back: "Retour",
-    game_paused: "Jeu en Pause",
-    resume_game: "Reprendre le Jeu",
-    resume_desc: "Vous êtes de retour dans le jeu. Continuez quand vous êtes prêt.",
-    select_language: "Sélectionner la Langue",
-    energy: "Énergie",
-    energy_full: "Votre énergie est pleine !",
-    light_theme: "Thème Clair",
-    dark_theme: "Thème Sombre",
-    sound_on: "Son Activé",
-    sound_off: "Son Désactivé",
-    level: "Niveau",
-    confirm: "OK"
-  },
-  de: {
-    start_title: "Memory-Spiel",
-    start_game: "Spiel Starten",
-    game_title: "Finde die Gleichen Karten!",
-    levels: "Level",
-    time: "Zeit: {0} Sek",
-    moves: "Züge: {0}",
-    best: "Beste: {0}",
-    scores: "Punkte",
-    level_scores: "Level-Punkte",
-    yes: "Ja",
-    no: "Nein",
-    restart_level: "Level Neustarten",
-    are_you_sure: "Sind Sie sicher?",
-    restart_confirm: "Möchten Sie das Level neu starten?",
-    level_complete: "🎉 Level {0} abgeschlossen!",
-    time_taken: "Zeit: <b>{0} Sek</b><br>Züge: <b>{1}</b>",
-    next_level: "Nächstes Level",
-    new_level: "Neues Level",
-    energy_low: "Ihre Energie wird knapp!",
-    energy_time_limit: "Sie müssen dieses Level in {0} Sek. abschließen.<br>1 Energie verwenden, um fortzufahren? <br><br><b>Verbleibende Energie: {1}</b>",
-    use_energy: "Ja, Verwenden",
-    no_energy: "Nein",
-    out_of_energy: "Keine Energie",
-    out_of_energy_desc: "Sie haben keine Energie mehr. Schauen Sie sich eine Werbung an, um fortzufahren oder starten Sie das Level neu.",
-    watch_ad: "Werbung Ansehen (Energie Auffüllen)",
-    restart: "Neustarten",
-    sure_restart: "Sind Sie sicher?",
-    restart_desc: "Das aktuelle Level wird neu gestartet.",
-    yes_restart: "Ja, Starten",
-    back: "Zurück",
-    game_paused: "Spiel Pausiert",
-    resume_game: "Spiel Fortsetzen",
-    resume_desc: "Sie sind zurück im Spiel. Fahren Sie fort, wenn Sie bereit sind.",
-    select_language: "Sprache Auswählen",
-    energy: "Energie",
-    energy_full: "Ihre Energie ist voll!",
-    light_theme: "Helles Thema",
-    dark_theme: "Dunkles Thema",
-    sound_on: "Ton Ein",
-    sound_off: "Ton Aus",
-    level: "Level",
-    confirm: "OK"
-  },
-  ja: {
-    start_title: "記憶ゲーム",
-    start_game: "ゲーム開始",
-    game_title: "同じカードを見つけよう！",
-    levels: "レベル",
-    time: "時間: {0} 秒",
-    moves: "移動: {0}",
-    best: "ベスト: {0}",
-    scores: "スコア",
-    level_scores: "レベルスコア",
-    yes: "はい",
-    no: "いいえ",
-    restart_level: "レベルを再開",
-    are_you_sure: "よろしいですか？",
-    restart_confirm: "レベルを再開しますか？",
-    level_complete: "🎉 レベル {0} クリア！",
-    time_taken: "時間: <b>{0} 秒</b><br>移動: <b>{1}</b>",
-    next_level: "次のレベル",
-    new_level: "新しいレベル",
-    energy_low: "エネルギーが少なくなっています！",
-    energy_time_limit: "このレベルを {0} 秒以内に完了する必要があります。<br>1 エネルギーを使用して続けますか？ <br><br><b>残りのエネルギー: {1}</b>",
-    use_energy: "はい、使用",
-    no_energy: "いいえ",
-    out_of_energy: "エネルギー切れ",
-    out_of_energy_desc: "エネルギーがなくなりました。続けるには広告を見るか、レベルを再開してください。",
-    watch_ad: "広告を見る（エネルギー補充）",
-    restart: "再開",
-    sure_restart: "よろしいですか？",
-    restart_desc: "現在のレベルが再開されます。",
-    yes_restart: "はい、開始",
-    back: "戻る",
-    game_paused: "ゲーム一時停止中",
-    resume_game: "ゲームを再開",
-    resume_desc: "ゲームに戻りました。準備ができたら続けてください。",
-    select_language: "言語を選択",
-    energy: "エネルギー",
-    energy_full: "エネルギーが満タンです！",
-    light_theme: "ライトテーマ",
-    dark_theme: "ダークテーマ",
-    sound_on: "音声オン",
-    sound_off: "音声オフ",
-    level: "レベル",
-    confirm: "OK"
-  },
-  ko: {
-    start_title: "기억력 게임",
-    start_game: "게임 시작",
-    game_title: "같은 카드를 찾아보세요!",
-    levels: "레벨",
-    time: "시간: {0} 초",
-    moves: "이동: {0}",
-    best: "최고: {0}",
-    scores: "점수",
-    level_scores: "레벨 점수",
-    yes: "예",
-    no: "아니오",
-    restart_level: "레벨 다시 시작",
-    are_you_sure: "확실합니까?",
-    restart_confirm: "레벨을 다시 시작하시겠습니까?",
-    level_complete: "🎉 레벨 {0} 완료!",
-    time_taken: "시간: <b>{0} 초</b><br>이동: <b>{1}</b>",
-    next_level: "다음 레벨",
-    new_level: "새 레벨",
-    energy_low: "에너지가 부족합니다!",
-    energy_time_limit: "이 레벨을 {0} 초 안에 완료해야 합니다.<br>계속하려면 에너지 1을 사용하시겠습니까? <br><br><b>남은 에너지: {1}</b>",
-    use_energy: "예, 사용",
-    no_energy: "아니오",
-    out_of_energy: "에너지 없음",
-    out_of_energy_desc: "에너지가 없습니다. 계속하려면 광고를 보거나 레벨을 다시 시작하세요.",
-    watch_ad: "광고 보기 (에너지 충전)",
-    restart: "다시 시작",
-    sure_restart: "확실합니까?",
-    restart_desc: "현재 레벨이 다시 시작됩니다.",
-    yes_restart: "예, 시작",
-    back: "뒤로",
-    game_paused: "게임 일시 중지됨",
-    resume_game: "게임 재개",
-    resume_desc: "게임으로 돌아왔습니다. 준비되면 계속하세요.",
-    select_language: "언어 선택",
-    energy: "에너지",
-    energy_full: "에너지가 가득 찼습니다!",
-    light_theme: "라이트 테마",
-    dark_theme: "다크 테마",
-    sound_on: "소리 켜기",
-    sound_off: "소리 끄기",
-    level: "레벨",
-    confirm: "확인"
-  },
-  ru: {
-    start_title: "Игра на Память",
-    start_game: "Начать Игру",
-    game_title: "Найди Одинаковые Карточки!",
-    levels: "Уровни",
-    time: "Время: {0} сек",
-    moves: "Ходы: {0}",
-    best: "Лучший: {0}",
-    scores: "Очки",
-    level_scores: "Очки Уровней",
-    yes: "Да",
-    no: "Нет",
-    restart_level: "Перезапустить Уровень",
-    are_you_sure: "Вы уверены?",
-    restart_confirm: "Хотите перезапустить уровень?",
-    level_complete: "🎉 Уровень {0} завершен!",
-    time_taken: "Время: <b>{0} сек</b><br>Ходы: <b>{1}</b>",
-    next_level: "Следующий Уровень",
-    new_level: "Новый Уровень",
-    energy_low: "У вас заканчивается энергия!",
-    energy_time_limit: "Вам нужно завершить этот уровень за {0} сек.<br>Использовать 1 энергию для продолжения? <br><br><b>Оставшаяся Энергия: {1}</b>",
-    use_energy: "Да, Использовать",
-    no_energy: "Нет",
-    out_of_energy: "Энергия Закончилась",
-    out_of_energy_desc: "У вас закончилась энергия. Посмотрите рекламу, чтобы продолжить, или перезапустите уровень.",
-    watch_ad: "Смотреть Рекламу (Пополнить Энергию)",
-    restart: "Перезапустить",
-    sure_restart: "Вы уверены?",
-    restart_desc: "Текущий уровень будет перезапущен.",
-    yes_restart: "Да, Начать",
-    back: "Назад",
-    game_paused: "Игра Приостановлена",
-    resume_game: "Продолжить Игру",
-    resume_desc: "Вы вернулись в игру. Продолжайте, когда будете готовы.",
-    select_language: "Выбрать Язык",
-    energy: "Энергия",
-    energy_full: "Ваша энергия полна!",
-    light_theme: "Светлая Тема",
-    dark_theme: "Темная Тема",
-    sound_on: "Звук Включен",
-    sound_off: "Звук Выключен",
-    level: "Уровень",
-    confirm: "ОК"
-  },
-  pt: {
-    start_title: "Jogo da Memória",
-    start_game: "Iniciar Jogo",
-    game_title: "Encontre as Cartas Iguais!",
-    levels: "Níveis",
-    time: "Tempo: {0} seg",
-    moves: "Movimentos: {0}",
-    best: "Melhor: {0}",
-    scores: "Pontuações",
-    level_scores: "Pontuações de Nível",
-    yes: "Sim",
-    no: "Não",
-    restart_level: "Reiniciar Nível",
-    are_you_sure: "Tem certeza?",
-    restart_confirm: "Deseja reiniciar o nível?",
-    level_complete: "🎉 Nível {0} concluído!",
-    time_taken: "Tempo: <b>{0} seg</b><br>Movimentos: <b>{1}</b>",
-    next_level: "Próximo Nível",
-    new_level: "Novo Nível",
-    energy_low: "Sua energia está acabando!",
-    energy_time_limit: "Você precisa completar este nível em {0} seg.<br>Usar 1 energia para continuar? <br><br><b>Energia Restante: {1}</b>",
-    use_energy: "Sim, Usar",
-    no_energy: "Não",
-    out_of_energy: "Sem Energia",
-    out_of_energy_desc: "Você ficou sem energia. Assista a um anúncio para continuar ou reinicie o nível.",
-    watch_ad: "Assistir Anúncio (Recarregar Energia)",
-    restart: "Reiniciar",
-    sure_restart: "Tem certeza?",
-    restart_desc: "O nível atual será reiniciado.",
-    yes_restart: "Sim, Iniciar",
-    back: "Voltar",
-    game_paused: "Jogo Pausado",
-    resume_game: "Retomar Jogo",
-    resume_desc: "Você voltou ao jogo. Continue quando estiver pronto.",
-    select_language: "Selecionar Idioma",
-    energy: "Energia",
-    energy_full: "Sua energia está cheia!",
-    light_theme: "Tema Claro",
-    dark_theme: "Tema Escuro",
-    sound_on: "Som Ligado",
-    sound_off: "Som Desligado",
-    level: "Nível",
-    confirm: "OK"
-  },
-  it: {
-    start_title: "Gioco di Memoria",
-    start_game: "Inizia Gioco",
-    game_title: "Trova le Carte Uguali!",
-    levels: "Livelli",
-    time: "Tempo: {0} sec",
-    moves: "Mosse: {0}",
-    best: "Migliore: {0}",
-    scores: "Punteggi",
-    level_scores: "Punteggi Livello",
-    yes: "Sì",
-    no: "No",
-    restart_level: "Riavvia Livello",
-    are_you_sure: "Sei sicuro?",
-    restart_confirm: "Vuoi riavviare il livello?",
-    level_complete: "🎉 Livello {0} completato!",
-    time_taken: "Tempo: <b>{0} sec</b><br>Mosse: <b>{1}</b>",
-    next_level: "Prossimo Livello",
-    new_level: "Nuovo Livello",
-    energy_low: "La tua energia si sta esaurendo!",
-    energy_time_limit: "Devi completare questo livello in {0} sec.<br>Usare 1 energia per continuare? <br><br><b>Energia Rimasta: {1}</b>",
-    use_energy: "Sì, Usa",
-    no_energy: "No",
-    out_of_energy: "Energia Esaurita",
-    out_of_energy_desc: "Hai esaurito l'energia. Guarda un annuncio per continuare o riavvia il livello.",
-    watch_ad: "Guarda Annuncio (Ricarica Energia)",
-    restart: "Riavvia",
-    sure_restart: "Sei sicuro?",
-    restart_desc: "Il livello corrente verrà riavviato.",
-    yes_restart: "Sì, Inizia",
-    back: "Indietro",
-    game_paused: "Gioco in Pausa",
-    resume_game: "Riprendi Gioco",
-    resume_desc: "Sei tornato al gioco. Continua quando sei pronto.",
-    select_language: "Seleziona Lingua",
-    energy: "Energia",
-    energy_full: "La tua energia è piena!",
-    light_theme: "Tema Chiaro",
-    dark_theme: "Tema Scuro",
-    sound_on: "Audio Attivato",
-    sound_off: "Audio Disattivato",
-    level: "Livello",
-    confirm: "OK"
-  },
-  ar: {
-    start_title: "لعبة الذاكرة",
-    start_game: "بدء اللعبة",
-    game_title: "ابحث عن البطاقات المتشابهة!",
-    levels: "المستويات",
-    time: "الوقت: {0} ثانية",
-    moves: "الحركات: {0}",
-    best: "الأفضل: {0}",
-    scores: "النتائج",
-    level_scores: "نتائج المستوى",
-    yes: "نعم",
-    no: "لا",
-    restart_level: "إعادة تشغيل المستوى",
-    are_you_sure: "هل أنت متأكد؟",
-    restart_confirm: "هل تريد إعادة تشغيل المستوى؟",
-    level_complete: "🎉 اكتمل المستوى {0}!",
-    time_taken: "الوقت: <b>{0} ثانية</b><br>الحركات: <b>{1}</b>",
-    next_level: "المستوى التالي",
-    new_level: "مستوى جديد",
-    energy_low: "طاقتك تنفد!",
-    energy_time_limit: "تحتاج إلى إكمال هذا المستوى في {0} ثانية.<br>استخدام 1 طاقة للمتابعة؟ <br><br><b>الطاقة المتبقية: {1}</b>",
-    use_energy: "نعم، استخدم",
-    no_energy: "لا",
-    out_of_energy: "نفدت الطاقة",
-    out_of_energy_desc: "لقد نفدت طاقتك. شاهد إعلانًا للمتابعة أو أعد تشغيل المستوى.",
-    watch_ad: "شاهد الإعلان (إعادة تعبئة الطاقة)",
-    restart: "إعادة التشغيل",
-    sure_restart: "هل أنت متأكد؟",
-    restart_desc: "سيتم إعادة تشغيل المستوى الحالي.",
-    yes_restart: "نعم، ابدأ",
-    back: "رجوع",
-    game_paused: "تم إيقاف اللعبة مؤقتًا",
-    resume_game: "استئناف اللعبة",
-    resume_desc: "لقد عدت إلى اللعبة. تابع عندما تكون مستعدًا.",
-    select_language: "اختر اللغة",
-    energy: "الطاقة",
-    energy_full: "طاقتك ممتلئة!",
-    light_theme: "السمة الفاتحة",
-    dark_theme: "السمة الداكنة",
-    sound_on: "تشغيل الصوت",
-    sound_off: "إيقاف الصوت",
-    level: "المستوى",
-    confirm: "موافق"
-  },
-  hi: {
-    start_title: "मेमोरी गेम",
-    start_game: "गेम शुरू करें",
-    game_title: "समान कार्ड ढूंढें!",
-    levels: "स्तर",
-    time: "समय: {0} सेकंड",
-    moves: "चालें: {0}",
-    best: "सर्वश्रेष्ठ: {0}",
-    scores: "स्कोर",
-    level_scores: "स्तर स्कोर",
-    yes: "हाँ",
-    no: "नहीं",
-    restart_level: "स्तर पुनः आरंभ करें",
-    are_you_sure: "क्या आप सुनिश्चित हैं?",
-    restart_confirm: "क्या आप स्तर पुनः आरंभ करना चाहते हैं?",
-    level_complete: "🎉 स्तर {0} पूरा हुआ!",
-    time_taken: "समय: <b>{0} सेकंड</b><br>चालें: <b>{1}</b>",
-    next_level: "अगला स्तर",
-    new_level: "नया स्तर",
-    energy_low: "आपकी ऊर्जा कम हो रही है!",
-    energy_time_limit: "आपको इस स्तर को {0} सेकंड में पूरा करना होगा।<br>जारी रखने के लिए 1 ऊर्जा का उपयोग करें? <br><br><b>शेष ऊर्जा: {1}</b>",
-    use_energy: "हाँ, उपयोग करें",
-    no_energy: "नहीं",
-    out_of_energy: "ऊर्जा समाप्त",
-    out_of_energy_desc: "आपकी ऊर्जा समाप्त हो गई है। जारी रखने के लिए एक विज्ञापन देखें या स्तर पुनः आरंभ करें।",
-    watch_ad: "विज्ञापन देखें (ऊर्जा भरें)",
-    restart: "पुनः आरंभ करें",
-    sure_restart: "क्या आप सुनिश्चित हैं?",
-    restart_desc: "वर्तमान स्तर पुनः आरंभ हो जाएगा।",
-    yes_restart: "हाँ, आरंभ करें",
-    back: "वापस",
-    game_paused: "गेम रोका गया",
-    resume_game: "गेम जारी रखें",
-    resume_desc: "आप गेम में वापस आ गए हैं। तैयार होने पर जारी रखें।",
-    select_language: "भाषा चुनें",
-    energy: "ऊर्जा",
-    energy_full: "आपकी ऊर्जा पूर्ण है!",
-    light_theme: "हल्की थीम",
-    dark_theme: "गहरी थीम",
-    sound_on: "ध्वनि चालू",
-    sound_off: "ध्वनि बंद",
-    level: "स्तर",
-    confirm: "ठीक है"
-  },
-  id: {
-    start_title: "Permainan Memori",
-    start_game: "Mulai Permainan",
-    game_title: "Temukan Kartu yang Sama!",
-    levels: "Level",
-    time: "Waktu: {0} detik",
-    moves: "Langkah: {0}",
-    best: "Terbaik: {0}",
-    scores: "Skor",
-    level_scores: "Skor Level",
-    yes: "Ya",
-    no: "Tidak",
-    restart_level: "Mulai Ulang Level",
-    are_you_sure: "Apakah Anda yakin?",
-    restart_confirm: "Apakah Anda ingin memulai ulang level?",
-    level_complete: "🎉 Level {0} selesai!",
-    time_taken: "Waktu: <b>{0} detik</b><br>Langkah: <b>{1}</b>",
-    next_level: "Level Berikutnya",
-    new_level: "Level Baru",
-    energy_low: "Energi Anda hampir habis!",
-    energy_time_limit: "Anda perlu menyelesaikan level ini dalam {0} detik.<br>Gunakan 1 energi untuk melanjutkan? <br><br><b>Energi Tersisa: {1}</b>",
-    use_energy: "Ya, Gunakan",
-    no_energy: "Tidak",
-    out_of_energy: "Energi Habis",
-    out_of_energy_desc: "Energi Anda habis. Tonton iklan untuk melanjutkan atau mulai ulang level.",
-    watch_ad: "Tonton Iklan (Isi Ulang Energi)",
-    restart: "Mulai Ulang",
-    sure_restart: "Apakah Anda yakin?",
-    restart_desc: "Level saat ini akan dimulai ulang.",
-    yes_restart: "Ya, Mulai",
-    back: "Kembali",
-    game_paused: "Permainan Dijeda",
-    resume_game: "Lanjutkan Permainan",
-    resume_desc: "Anda kembali ke permainan. Lanjutkan ketika Anda siap.",
-    select_language: "Pilih Bahasa",
-    energy: "Energi",
-    energy_full: "Energi Anda penuh!",
-    light_theme: "Tema Terang",
-    dark_theme: "Tema Gelap",
-    sound_on: "Suara Nyala",
-    sound_off: "Suara Mati",
-    level: "Level",
-    confirm: "OK"
-  },
-  th: {
-    start_title: "เกมความจำ",
-    start_game: "เริ่มเกม",
-    game_title: "หาไพ่ที่เหมือนกัน!",
-    levels: "ระดับ",
-    time: "เวลา: {0} วินาที",
-    moves: "การเคลื่อนไหว: {0}",
-    best: "ดีที่สุด: {0}",
-    scores: "คะแนน",
-    level_scores: "คะแนนระดับ",
-    yes: "ใช่",
-    no: "ไม่",
-    restart_level: "เริ่มระดับใหม่",
-    are_you_sure: "คุณแน่ใจหรือไม่?",
-    restart_confirm: "คุณต้องการเริ่มระดับใหม่หรือไม่?",
-    level_complete: "🎉 ระดับ {0} สำเร็จ!",
-    time_taken: "เวลา: <b>{0} วินาที</b><br>การเคลื่อนไหว: <b>{1}</b>",
-    next_level: "ระดับถัดไป",
-    new_level: "ระดับใหม่",
-    energy_low: "พลังงานของคุณกำลังจะหมด!",
-    energy_time_limit: "คุณต้องทำระดับนี้ให้สำเร็จภายใน {0} วินาที<br>ใช้พลังงาน 1 หน่วยเพื่อดำเนินต่อหรือไม่? <br><br><b>พลังงานที่เหลือ: {1}</b>",
-    use_energy: "ใช่ ใช้",
-    no_energy: "ไม่",
-    out_of_energy: "พลังงานหมด",
-    out_of_energy_desc: "พลังงานของคุณหมดแล้ว ดูโฆษณาเพื่อดำเนินต่อหรือเริ่มระดับใหม่",
-    watch_ad: "ดูโฆษณา (เติมพลังงาน)",
-    restart: "เริ่มใหม่",
-    sure_restart: "คุณแน่ใจหรือไม่?",
-    restart_desc: "ระดับปัจจุบันจะเริ่มใหม่",
-    yes_restart: "ใช่ เริ่ม",
-    back: "กลับ",
-    game_paused: "เกมหยุดชั่วคราว",
-    resume_game: "เล่นเกมต่อ",
-    resume_desc: "คุณกลับสู่เกมแล้ว ดำเนินต่อเมื่อคุณพร้อม",
-    select_language: "เลือกภาษา",
-    energy: "พลังงาน",
-    energy_full: "พลังงานของคุณเต็มแล้ว!",
-    light_theme: "ธีมสว่าง",
-    dark_theme: "ธีมมืด",
-    sound_on: "เปิดเสียง",
-    sound_off: "ปิดเสียง",
-    level: "ระดับ",
-    confirm: "ตกลง"
-  },
-  vi: {
-    start_title: "Trò Chơi Trí Nhớ",
-    start_game: "Bắt Đầu Trò Chơi",
-    game_title: "Tìm Thẻ Giống Nhau!",
-    levels: "Cấp độ",
-    time: "Thời gian: {0} giây",
-    moves: "Lượt di chuyển: {0}",
-    best: "Tốt nhất: {0}",
-    scores: "Điểm số",
-    level_scores: "Điểm số Cấp độ",
-    yes: "Có",
-    no: "Không",
-    restart_level: "Khởi động lại Cấp độ",
-    are_you_sure: "Bạn có chắc không?",
-    restart_confirm: "Bạn có muốn khởi động lại cấp độ không?",
-    level_complete: "🎉 Cấp độ {0} hoàn thành!",
-    time_taken: "Thời gian: <b>{0} giây</b><br>Lượt di chuyển: <b>{1}</b>",
-    next_level: "Cấp độ Tiếp theo",
-    new_level: "Cấp độ Mới",
-    energy_low: "Năng lượng của bạn sắp hết!",
-    energy_time_limit: "Bạn cần hoàn thành cấp độ này trong {0} giây.<br>Sử dụng 1 năng lượng để tiếp tục? <br><br><b>Năng lượng Còn lại: {1}</b>",
-    use_energy: "Có, Sử dụng",
-    no_energy: "Không",
-    out_of_energy: "Hết Năng lượng",
-    out_of_energy_desc: "Bạn đã hết năng lượng. Xem quảng cáo để tiếp tục hoặc khởi động lại cấp độ.",
-    watch_ad: "Xem Quảng Cáo (Nạp Năng lượng)",
-    restart: "Khởi động lại",
-    sure_restart: "Bạn có chắc không?",
-    restart_desc: "Cấp độ hiện tại sẽ được khởi động lại.",
-    yes_restart: "Có, Bắt đầu",
-    back: "Quay lại",
-    game_paused: "Trò Chơi Tạm dừng",
-    resume_game: "Tiếp tục Trò Chơi",
-    resume_desc: "Bạn đã quay lại trò chơi. Tiếp tục khi bạn sẵn sàng.",
-    select_language: "Chọn Ngôn ngữ",
-    energy: "Năng lượng",
-    energy_full: "Năng lượng của bạn đã đầy!",
-    light_theme: "Chủ đề Sáng",
-    dark_theme: "Chủ đề Tối",
-    sound_on: "Bật Âm thanh",
-    sound_off: "Tắt Âm thanh",
-    level: "Cấp độ",
-    confirm: "OK"
-  },
-  nl: {
-    start_title: "Geheugenspel",
-    start_game: "Spel Starten",
-    game_title: "Vind dezelfde Kaarten!",
-    levels: "Niveaus",
-    time: "Tijd: {0} sec",
-    moves: "Zetten: {0}",
-    best: "Beste: {0}",
-    scores: "Scores",
-    level_scores: "Niveau Scores",
-    yes: "Ja",
-    no: "Nee",
-    restart_level: "Herstart Niveau",
-    are_you_sure: "Weet je het zeker?",
-    restart_confirm: "Wil je het niveau opnieuw starten?",
-    level_complete: "🎉 Niveau {0} voltooid!",
-    time_taken: "Tijd: <b>{0} sec</b><br>Zetten: <b>{1}</b>",
-    next_level: "Volgende Niveau",
-    new_level: "Nieuw Niveau",
-    energy_low: "Je energie raakt op!",
-    energy_time_limit: "Je moet dit niveau in {0} sec. voltooien.<br>1 energie gebruiken om door te gaan? <br><br><b>Resterende Energie: {1}</b>",
-    use_energy: "Ja, Gebruik",
-    no_energy: "Nee",
-    out_of_energy: "Geen Energie",
-    out_of_energy_desc: "Je hebt geen energie meer. Bekijk een advertentie om door te gaan of herstart het niveau.",
-    watch_ad: "Bekijk Advertentie (Vul Energie bij)",
-    restart: "Herstart",
-    sure_restart: "Weet je het zeker?",
-    restart_desc: "Het huidige niveau wordt opnieuw gestart.",
-    yes_restart: "Ja, Start",
-    back: "Terug",
-    game_paused: "Spel Gepauzeerd",
-    resume_game: "Hervat Spel",
-    resume_desc: "Je bent terug in het spel. Ga verder wanneer je klaar bent.",
-    select_language: "Selecteer Taal",
-    energy: "Energie",
-    energy_full: "Je energie is vol!",
-    light_theme: "Licht Thema",
-    dark_theme: "Donker Thema",
-    sound_on: "Geluid Aan",
-    sound_off: "Geluid Uit",
-    level: "Niveau",
-    confirm: "OK"
-  },
-  pl: {
-    start_title: "Gra Memory",
-    start_game: "Rozpocznij Grę",
-    game_title: "Znajdź Te Same Karty!",
-    levels: "Poziomy",
-    time: "Czas: {0} sek",
-    moves: "Ruchy: {0}",
-    best: "Najlepszy: {0}",
-    scores: "Wyniki",
-    level_scores: "Wyniki Poziomów",
-    yes: "Tak",
-    no: "Nie",
-    restart_level: "Uruchom Ponownie Poziom",
-    are_you_sure: "Czy jesteś pewien?",
-    restart_confirm: "Czy chcesz uruchomić ponownie poziom?",
-    level_complete: "🎉 Poziom {0} ukończony!",
-    time_taken: "Czas: <b>{0} sek</b><br>Ruchy: <b>{1}</b>",
-    next_level: "Następny Poziom",
-    new_level: "Nowy Poziom",
-    energy_low: "Twoja energia się kończy!",
-    energy_time_limit: "Musisz ukończyć ten poziom w {0} sek.<br>Użyć 1 energii, aby kontynuować? <br><br><b>Pozostała Energia: {1}</b>",
-    use_energy: "Tak, Użyj",
-    no_energy: "Nie",
-    out_of_energy: "Brak Energii",
-    out_of_energy_desc: "Skończyła ci się energia. Obejrzyj reklamę, aby kontynuować lub uruchom ponownie poziom.",
-    watch_ad: "Obejrzyj Reklamę (Uzupełnij Energię)",
-    restart: "Uruchom Ponownie",
-    sure_restart: "Czy jesteś pewien?",
-    restart_desc: "Obecny poziom zostanie uruchomiony ponownie.",
-    yes_restart: "Tak, Uruchom",
-    back: "Wróć",
-    game_paused: "Gra Wstrzymana",
-    resume_game: "Wznów Grę",
-    resume_desc: "Wróciłeś do gry. Kontynuuj, gdy będziesz gotowy.",
-    select_language: "Wybierz Język",
-    energy: "Energia",
-    energy_full: "Twoja energia jest pełna!",
-    light_theme: "Jasny Motyw",
-    dark_theme: "Ciemny Motyw",
-    sound_on: "Dźwięk Włączony",
-    sound_off: "Dźwięk Wyłączony",
-    level: "Poziom",
-    confirm: "OK"
-  },
-  sv: {
-    start_title: "Memoryspel",
-    start_game: "Starta Spelet",
-    game_title: "Hitta Samma Kort!",
-    levels: "Nivåer",
-    time: "Tid: {0} sek",
-    moves: "Drag: {0}",
-    best: "Bästa: {0}",
-    scores: "Poäng",
-    level_scores: "Nivå Poäng",
-    yes: "Ja",
-    no: "Nej",
-    restart_level: "Starta Om Nivå",
-    are_you_sure: "Är du säker?",
-    restart_confirm: "Vill du starta om nivån?",
-    level_complete: "🎉 Nivå {0} slutförd!",
-    time_taken: "Tid: <b>{0} sek</b><br>Drag: <b>{1}</b>",
-    next_level: "Nästa Nivå",
-    new_level: "Ny Nivå",
-    energy_low: "Din energi håller på att ta slut!",
-    energy_time_limit: "Du måste slutföra denna nivå på {0} sek.<br>Använd 1 energi för att fortsätta? <br><br><b>Återstående Energi: {1}</b>",
-    use_energy: "Ja, Använd",
-    no_energy: "Nej",
-    out_of_energy: "Slut på Energi",
-    out_of_energy_desc: "Du har slut på energi. Titta på en annons för att fortsätta eller starta om nivån.",
-    watch_ad: "Titta på Annons (Fyll på Energi)",
-    restart: "Starta Om",
-    sure_restart: "Är du säker?",
-    restart_desc: "Nuvarande nivå kommer att startas om.",
-    yes_restart: "Ja, Starta",
-    back: "Tillbaka",
-    game_paused: "Spelet Pausat",
-    resume_game: "Återuppta Spel",
-    resume_desc: "Du är tillbaka i spelet. Fortsätt när du är redo.",
-    select_language: "Välj Språk",
-    energy: "Energi",
-    energy_full: "Din energi är full!",
-    light_theme: "Ljust Tema",
-    dark_theme: "Mörkt Tema",
-    sound_on: "Ljud På",
-    sound_off: "Ljud Av",
-    level: "Nivå",
-    confirm: "OK"
-  },
-  uk: {
-    start_title: "Гра на Пам'ять",
-    start_game: "Почати Гру",
-    game_title: "Знайди Однакові Картки!",
-    levels: "Рівні",
-    time: "Час: {0} сек",
-    moves: "Ходи: {0}",
-    best: "Найкращий: {0}",
-    scores: "Очки",
-    level_scores: "Очки Рівнів",
-    yes: "Так",
-    no: "Ні",
-    restart_level: "Перезапустити Рівень",
-    are_you_sure: "Ви впевнені?",
-    restart_confirm: "Ви хочете перезапустити рівень?",
-    level_complete: "🎉 Рівень {0} завершено!",
-    time_taken: "Час: <b>{0} сек</b><br>Ходи: <b>{1}</b>",
-    next_level: "Наступний Рівень",
-    new_level: "Новий Рівень",
-    energy_low: "Ваша енергія закінчується!",
-    energy_time_limit: "Вам потрібно завершити цей рівень за {0} сек.<br>Використати 1 енергію для продовження? <br><br><b>Залишок Енергії: {1}</b>",
-    use_energy: "Так, Використати",
-    no_energy: "Ні",
-    out_of_energy: "Енергія Закінчилась",
-    out_of_energy_desc: "У вас закінчилася енергія. Перегляньте рекламу, щоб продовжити, або перезапустіть рівень.",
-    watch_ad: "Дивитися Рекламу (Поповнити Енергію)",
-    restart: "Перезапустити",
-    sure_restart: "Ви впевнені?",
-    restart_desc: "Поточний рівень буде перезапущено.",
-    yes_restart: "Так, Почати",
-    back: "Назад",
-    game_paused: "Гра Призупинена",
-    resume_game: "Продовжити Гру",
-    resume_desc: "Ви повернулися до гри. Продовжуйте, коли будете готові.",
-    select_language: "Виберіть Мову",
-    energy: "Енергія",
-    energy_full: "Ваша енергія повна!",
-    light_theme: "Світла Тема",
-    dark_theme: "Темна Тема",
-    sound_on: "Звук Увімкнено",
-    sound_off: "Звук Вимкнено",
-    level: "Рівень",
-    confirm: "OK"
-  }
-};
+    <div id="start-modal" class="modal visible">
+        <div class="modal-content">
+            <h2 id="start-title">Hafıza Kart Oyunu</h2>
+            <div class="intro-text" id="start-description">
+                Kartları eşleştirmeye çalışın! Oyun başladığında tüm kartlar 3 saniye boyunca açık kalacak, sonra kapanacak ve oyun başlayacak.
+            </div>
+            <div class="modal-buttons">
+                <button id="start-game-btn" class="modal-btn">Oyuna Başla</button>
+            </div>
+        </div>
+    </div>
 
-let unlockedLevel = 1;
-let currentLevel = 1;
-let timer = 0;
-let timerInterval = null;
-let moves = 0;
-let bestTimes = JSON.parse(localStorage.getItem('memoryGameBestTimes') || '{}');
-let bestMoves = JSON.parse(localStorage.getItem('memoryGameBestMoves') || '{}');
-let firstCard = null, secondCard = null, lockBoard = false, matchedPairs = 0;
-let soundOn = JSON.parse(localStorage.getItem('memoryGameSoundOn') || 'true');
-let energy = ENERGY_MAX;
-let energyCheckMultiplier = 1;
-let isPaused = false;
-let currentLanguage = localStorage.getItem('memoryGameLanguage') || 'en';
+    <div id="complete-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="complete-title">Tebrikler!</h2>
+            <div id="complete-message" class="intro-text"></div>
+            <div class="modal-buttons">
+                <button id="next-level-btn" class="modal-btn">Sonraki Seviye</button>
+                <button id="restart-level-btn" class="modal-btn secondary">Tekrar Oyna</button>
+            </div>
+        </div>
+    </div>
 
-// --- ELEMENTLER ---
-const board = document.getElementById('game-board');
-const timerSpan = document.getElementById('timer');
-const bestTimeSpan = document.getElementById('best-time');
-const movesSpan = document.getElementById('moves');
-const messageDiv = document.getElementById('message');
-const levelSelect = document.getElementById('level-select');
-const scoreHistoryDiv = document.getElementById('score-history');
-const soundToggle = document.getElementById('sound-toggle');
-const restartBtn = document.getElementById('restart-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const languageToggle = document.getElementById('language-toggle');
-const audioMatch = document.getElementById('audio-match');
-const audioWrong = document.getElementById('audio-wrong');
-const audioLevel = document.getElementById('audio-level');
-const energyBar = document.getElementById('energy-bar');
+    <div id="restart-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="restart-title">Yeniden Başlat</h2>
+            <div class="intro-text" id="restart-message">
+                Mevcut seviyeyi yeniden başlatmak istediğinizden emin misiniz?
+            </div>
+            <div class="modal-buttons">
+                <button id="confirm-restart-btn" class="modal-btn">Evet</button>
+                <button id="cancel-restart-btn" class="modal-btn secondary">Hayır</button>
+            </div>
+        </div>
+    </div>
 
-// --- DİL FONKSİYONLARI ---
-function t(key, ...params) {
-  if (translations[currentLanguage] && translations[currentLanguage][key]) {
-    let text = translations[currentLanguage][key];
-    params.forEach((param, index) => {
-      text = text.replace(`{${index}}`, param);
-    });
-    return text;
-  }
-  if (translations['en'] && translations['en'][key]) {
-    let text = translations['en'][key];
-    params.forEach((param, index) => {
-      text = text.replace(`{${index}}`, param);
-    });
-    return text;
-  }
-  return key;
-}
+    <div id="energy-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="energy-title">Enerji Uyarısı!</h2>
+            <div id="energy-message" class="intro-text"></div>
+            <div class="modal-buttons">
+                <button id="use-energy-btn" class="modal-btn warning">Enerji Kullan</button>
+                <button id="watch-ad-btn" class="modal-btn">Reklam İzle</button>
+                <button id="cancel-energy-btn" class="modal-btn secondary">İptal</button>
+            </div>
+        </div>
+    </div>
 
-function updateLanguage() {
-  document.querySelectorAll('[data-key]').forEach(element => {
-    const key = element.getAttribute('data-key');
-    element.textContent = t(key);
-  });
-  
-  document.getElementById('start-title').textContent = t('start_title');
-  document.getElementById('start-game-btn').textContent = t('start_game');
-  document.getElementById('game-title').textContent = t('game_title');
-  
-  languageToggle.title = t('select_language');
-  themeToggle.title = document.body.classList.contains('dark-mode') ? 
-    t('light_theme') : t('dark_theme');
-  soundToggle.title = soundOn ? t('sound_off') : t('sound_on');
-  restartBtn.title = t('restart_level');
-  
-  updateGameInfoText();
-  updateScoreHistory();
-  updateBestTime();
-  updateEnergyBar();
-}
+    <div id="ad-modal" class="modal">
+        <div class="modal-content">
+            <h2>Reklam</h2>
+            <div class="ad-container">
+                <div class="ad-text">Reklam Yükleniyor...</div>
+                <div class="countdown" id="ad-countdown">3</div>
+                <div>Lütfen bekleyin...</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="close-ad-btn" class="modal-btn" disabled>Kapat</button>
+            </div>
+        </div>
+    </div>
 
-function updateGameInfoText() {
-  // Zaman ve hamle birimlerini dil çevirilerinden al
-  const timeSuffix = currentLanguage === 'en' ? ' sec' : 
-                    currentLanguage === 'tr' ? ' sn' : 
-                    currentLanguage === 'zh' ? ' 秒' :
-                    currentLanguage === 'es' ? ' seg' :
-                    currentLanguage === 'fr' ? ' sec' :
-                    currentLanguage === 'de' ? ' Sek' :
-                    currentLanguage === 'ja' ? ' 秒' :
-                    currentLanguage === 'ko' ? ' 초' :
-                    currentLanguage === 'ru' ? ' сек' :
-                    currentLanguage === 'pt' ? ' seg' :
-                    currentLanguage === 'it' ? ' sec' :
-                    currentLanguage === 'ar' ? ' ثانية' :
-                    currentLanguage === 'hi' ? ' सेकंड' :
-                    currentLanguage === 'id' ? ' detik' :
-                    currentLanguage === 'th' ? ' วินาที' :
-                    currentLanguage === 'vi' ? ' giây' :
-                    currentLanguage === 'nl' ? ' sec' :
-                    currentLanguage === 'pl' ? ' sek' :
-                    currentLanguage === 'sv' ? ' sek' :
-                    currentLanguage === 'uk' ? ' сек' : ' sec';
-  
-  timerSpan.textContent = t('time', timer);
-  movesSpan.textContent = t('moves', moves);
-  
-  const best = bestTimes[currentLevel];
-  bestTimeSpan.textContent = t('best', best ? best + timeSuffix : '-');
-}
+    <div id="language-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="language-title">Dil Seçin</h2>
+            <div class="language-grid" id="language-grid"></div>
+            <div class="modal-buttons">
+                <button id="language-confirm" class="modal-btn">Tamam</button>
+            </div>
+        </div>
+    </div>
 
-function showLanguageModal() {
-  const languageOptions = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-    { code: 'zh', name: '中文 (简体)', flag: '🇨🇳' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-    { code: 'ja', name: '日本語', flag: '🇯🇵' },
-    { code: 'ko', name: '한국어', flag: '🇰🇷' },
-    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-    { code: 'pt', name: 'Português', flag: '🇵🇹' },
-    { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
-    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
-    { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
-    { code: 'th', name: 'ไทย', flag: '🇹🇭' },
-    { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
-    { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
-    { code: 'pl', name: 'Polski', flag: '🇵🇱' },
-    { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
-    { code: 'uk', name: 'Українська', flag: '🇺🇦' }
-  ];
+    <div id="levels-modal" class="modal">
+        <div class="modal-content levels-modal-content">
+            <h2 id="levels-modal-title">Bölüm Seçin</h2>
+            <div class="levels-grid" id="levels-grid"></div>
+            <div class="modal-buttons">
+                <button id="levels-close-btn" class="modal-btn">Kapat</button>
+            </div>
+        </div>
+    </div>
 
-  let languageHTML = '<div class="language-grid">';
-  languageOptions.forEach(lang => {
-    languageHTML += `
-      <div class="language-option ${lang.code === currentLanguage ? 'selected' : ''}" data-lang="${lang.code}">
-        ${lang.flag} ${lang.name}
-      </div>
-    `;
-  });
-  languageHTML += '</div>';
+    <div id="scores-modal" class="modal">
+        <div class="modal-content scores-modal-content">
+            <h2 id="scores-modal-title">Skorlar</h2>
+            <div class="score-list" id="score-list"></div>
+            <div class="modal-buttons">
+                <button id="scores-close-btn" class="modal-btn">Kapat</button>
+            </div>
+        </div>
+    </div>
 
-  showModal(
-    t('select_language'),
-    languageHTML,
-    t('confirm'),
-    () => { hideModal(); },
-    null,
-    null
-  );
+    <audio id="flip-sound" src="cevir.mp3" preload="auto"></audio>
+    <audio id="match-sound" src="bulundu.mp3" preload="auto"></audio>
+    <audio id="complete-sound" src="bitti.mp3" preload="auto"></audio>
+    <audio id="wrong-sound" src="hata.mp3" preload="auto"></audio>
 
-  document.querySelectorAll('.language-option').forEach(option => {
-    option.addEventListener('click', () => {
-      const newLang = option.getAttribute('data-lang');
-      if (newLang !== currentLanguage) {
-        currentLanguage = newLang;
-        localStorage.setItem('memoryGameLanguage', currentLanguage);
-        updateLanguage();
-        hideModal();
-      }
-    });
-  });
-}
+    <script>
+        // Dil çevirileri - TÜM DİLLER
+        const translations = {
+            tr: {
+                game_title: "Hafıza Kart Oyunu", levels: "Bölümler", scores: "Skorlar", time: "Süre: {0} sn", moves: "Hamle: {0}", best: "En İyi: {0}", level_scores: "Seviye Skorları",
+                start_title: "Hafıza Kart Oyunu", start_description: "Kartları eşleştirmeye çalışın! Oyun başladığında tüm kartlar 3 saniye boyunca açık kalacak, sonra kapanacak ve oyun başlayacak.", start_game: "Oyuna Başla",
+                complete_title: "Tebrikler!", level_complete: "🎉 Seviye {0} tamamlandı!", time_taken: "Süre: <b>{0} saniye</b><br>Hamle: <b>{1}</b>", next_level: "Sonraki Seviye", restart_level: "Tekrar Oyna",
+                select_language: "Dil Seçin", confirm: "Tamam", restart_confirm: "Mevcut seviyeyi yeniden başlatmak istediğinizden emin misiniz?", yes: "Evet", no: "Hayır", level: "Seviye",
+                sound_on: "Ses Açık", sound_off: "Ses Kapalı", light_theme: "Açık Tema", dark_theme: "Koyu Tema", energy: "Enerji", energy_low: "Enerji Azalıyor!",
+                energy_warning: "Bu seviyeyi {0} saniye içinde tamamlaman gerekiyor!<br><br>Enerji kullanarak devam edebilir veya reklam izleyerek enerji doldurabilirsin.", use_energy: "Enerji Kullan", watch_ad: "Reklam İzle", cancel: "İptal",
+                remaining_energy: "Kalan Enerji: {0}", out_of_energy: "Enerjin Bitti!", out_of_energy_desc: "Enerjin kalmadı. Devam etmek için reklam izleyerek enerji doldurabilirsin.", energy_refilled: "Enerjin Doldu!",
+                ad_watch: "Reklam İzleniyor...", ad_complete: "Reklam tamamlandı! Enerjin doldu.", time_limit: "Zaman Sınırı: {0} sn", restart_title: "Yeniden Başlat", restart_message: "Mevcut seviyeyi yeniden başlatmak istediğinizden emin misiniz?",
+                time_unit: "sn", moves_unit: "hamle", best_time_unit: "sn", select_level: "Bölüm Seçin", close: "Kapat"
+            },
+            en: {
+                game_title: "Memory Card Game", levels: "Levels", scores: "Scores", time: "Time: {0} sec", moves: "Moves: {0}", best: "Best: {0}", level_scores: "Level Scores",
+                start_title: "Memory Card Game", start_description: "Try to match the cards! When the game starts, all cards will remain open for 3 seconds, then close and the game will begin.", start_game: "Start Game",
+                complete_title: "Congratulations!", level_complete: "🎉 Level {0} completed!", time_taken: "Time: <b>{0} seconds</b><br>Moves: <b>{1}</b>", next_level: "Next Level", restart_level: "Play Again",
+                select_language: "Select Language", confirm: "OK", restart_confirm: "Are you sure you want to restart the current level?", yes: "Yes", no: "No", level: "Level",
+                sound_on: "Sound On", sound_off: "Sound Off", light_theme: "Light Theme", dark_theme: "Dark Theme", energy: "Energy", energy_low: "Energy Low!",
+                energy_warning: "You need to complete this level in {0} seconds!<br><br>You can use energy to continue or watch an ad to refill energy.", use_energy: "Use Energy", watch_ad: "Watch Ad", cancel: "Cancel",
+                remaining_energy: "Remaining Energy: {0}", out_of_energy: "Out of Energy!", out_of_energy_desc: "You're out of energy. Watch an ad to refill your energy and continue.", energy_refilled: "Energy Refilled!",
+                ad_watch: "Watching Ad...", ad_complete: "Ad completed! Your energy has been refilled.", time_limit: "Time Limit: {0} sec", restart_title: "Restart Level", restart_message: "Are you sure you want to restart the current level?",
+                time_unit: "sec", moves_unit: "moves", best_time_unit: "sec", select_level: "Select Level", close: "Close"
+            },
+            zh: {
+                game_title: "记忆卡片游戏", levels: "关卡", scores: "分数", time: "时间: {0} 秒", moves: "移动: {0}", best: "最佳: {0}", level_scores: "关卡分数",
+                start_title: "记忆卡片游戏", start_description: "尝试匹配卡片！游戏开始时，所有卡片将显示3秒钟，然后关闭，游戏开始。", start_game: "开始游戏",
+                complete_title: "恭喜！", level_complete: "🎉 第 {0} 关完成！", time_taken: "时间: <b>{0} 秒</b><br>移动: <b>{1}</b>", next_level: "下一关", restart_level: "再玩一次",
+                select_language: "选择语言", confirm: "确定", restart_confirm: "确定要重新开始当前关卡吗？", yes: "是", no: "否", level: "关卡",
+                sound_on: "声音开", sound_off: "声音关", light_theme: "浅色主题", dark_theme: "深色主题", energy: "能量", energy_low: "能量不足！",
+                energy_warning: "你需要在 {0} 秒内完成此关卡！<br><br>你可以使用能量继续或观看广告补充能量。", use_energy: "使用能量", watch_ad: "观看广告", cancel: "取消",
+                remaining_energy: "剩余能量: {0}", out_of_energy: "能量耗尽！", out_of_energy_desc: "你的能量已耗尽。观看广告补充能量并继续游戏。", energy_refilled: "能量已补充！",
+                ad_watch: "正在播放广告...", ad_complete: "广告播放完成！能量已补充。", time_limit: "时间限制: {0} 秒", restart_title: "重新开始", restart_message: "确定要重新开始当前关卡吗？",
+                time_unit: "秒", moves_unit: "移动", best_time_unit: "秒", select_level: "选择关卡", close: "关闭"
+            },
+            es: {
+                game_title: "Juego de Memoria", levels: "Niveles", scores: "Puntuaciones", time: "Tiempo: {0} seg", moves: "Movimientos: {0}", best: "Mejor: {0}", level_scores: "Puntuaciones por Nivel",
+                start_title: "Juego de Memoria", start_description: "¡Intenta emparejar las cartas! Cuando comience el juego, todas las cartas permanecerán abiertas durante 3 segundos, luego se cerrarán y el juego comenzará.", start_game: "Comenzar Juego",
+                complete_title: "¡Felicidades!", level_complete: "🎉 ¡Nivel {0} completado!", time_taken: "Tiempo: <b>{0} segundos</b><br>Movimientos: <b>{1}</b>", next_level: "Siguiente Nivel", restart_level: "Jugar de Nuevo",
+                select_language: "Seleccionar Idioma", confirm: "Aceptar", restart_confirm: "¿Estás seguro de que quieres reiniciar el nivel actual?", yes: "Sí", no: "No", level: "Nivel",
+                sound_on: "Sonido Activado", sound_off: "Sonido Desactivado", light_theme: "Tema Claro", dark_theme: "Tema Oscuro", energy: "Energía", energy_low: "¡Energía Baja!",
+                energy_warning: "¡Necesitas completar este nivel en {0} segundos!<br><br>Puedes usar energía para continuar o ver un anuncio para recargar energía.", use_energy: "Usar Energía", watch_ad: "Ver Anuncio", cancel: "Cancelar",
+                remaining_energy: "Energía Restante: {0}", out_of_energy: "¡Sin Energía!", out_of_energy_desc: "Te has quedado sin energía. Mira un anuncio para recargar tu energía y continuar.", energy_refilled: "¡Energía Recargada!",
+                ad_watch: "Viendo Anuncio...", ad_complete: "¡Anuncio completado! Tu energía ha sido recargada.", time_limit: "Límite de Tiempo: {0} seg", restart_title: "Reiniciar Nivel", restart_message: "¿Estás seguro de que quieres reiniciar el nivel actual?",
+                time_unit: "seg", moves_unit: "movimientos", best_time_unit: "seg", select_level: "Seleccionar Nivel", close: "Cerrar"
+            },
+            fr: {
+                game_title: "Jeu de Mémoire", levels: "Niveaux", scores: "Scores", time: "Temps: {0} sec", moves: "Mouvements: {0}", best: "Meilleur: {0}", level_scores: "Scores par Niveau",
+                start_title: "Jeu de Mémoire", start_description: "Essayez d'associer les cartes ! Lorsque le jeu commence, toutes les cartes restent ouvertes pendant 3 secondes, puis se ferment et le jeu commence.", start_game: "Commencer le Jeu",
+                complete_title: "Félicitations !", level_complete: "🎉 Niveau {0} terminé !", time_taken: "Temps: <b>{0} secondes</b><br>Mouvements: <b>{1}</b>", next_level: "Niveau Suivant", restart_level: "Rejouer",
+                select_language: "Choisir la Langue", confirm: "OK", restart_confirm: "Êtes-vous sûr de vouloir redémarrer le niveau actuel ?", yes: "Oui", no: "Non", level: "Niveau",
+                sound_on: "Son Activé", sound_off: "Son Désactivé", light_theme: "Thème Clair", dark_theme: "Thème Sombre", energy: "Énergie", energy_low: "Énergie Faible !",
+                energy_warning: "Vous devez terminer ce niveau en {0} secondes !<br><br>Vous pouvez utiliser de l'énergie pour continuer ou regarder une publicité pour recharger l'énergie.", use_energy: "Utiliser l'Énergie", watch_ad: "Voir une Pub", cancel: "Annuler",
+                remaining_energy: "Énergie Restante: {0}", out_of_energy: "Plus d'Énergie !", out_of_energy_desc: "Vous n'avez plus d'énergie. Regardez une publicité pour recharger votre énergie et continuer.", energy_refilled: "Énergie Rechargée !",
+                ad_watch: "Regardez la publicité...", ad_complete: "Publicité terminée ! Votre énergie a été rechargée.", time_limit: "Limite de Temps: {0} sec", restart_title: "Redémarrer le Niveau", restart_message: "Êtes-vous sûr de vouloir redémarrer le nivel actuel ?",
+                time_unit: "sec", moves_unit: "mouvements", best_time_unit: "sec", select_level: "Sélectionner Niveau", close: "Fermer"
+            },
+            de: {
+                game_title: "Memory-Spiel", levels: "Level", scores: "Punkte", time: "Zeit: {0} Sek", moves: "Züge: {0}", best: "Beste: {0}", level_scores: "Level-Punkte",
+                start_title: "Memory-Spiel", start_description: "Versuche, die Karten zu paaren! Wenn das Spiel startet, bleiben alle Karten 3 Sekunden lang offen, dann schließen sie sich und das Spiel beginnt.", start_game: "Spiel Starten",
+                complete_title: "Glückwunsch!", level_complete: "🎉 Level {0} abgeschlossen!", time_taken: "Zeit: <b>{0} Sekunden</b><br>Züge: <b>{1}</b>", next_level: "Nächstes Level", restart_level: "Nochmal Spielen",
+                select_language: "Sprache Wählen", confirm: "OK", restart_confirm: "Sind Sie sicher, dass Sie das aktuelle Level neu starten möchten?", yes: "Ja", no: "Nein", level: "Level",
+                sound_on: "Ton An", sound_off: "Ton Aus", light_theme: "Helles Design", dark_theme: "Dunkles Design", energy: "Energie", energy_low: "Energie Niedrig!",
+                energy_warning: "Sie müssen dieses Level in {0} Sekunden abschließen!<br><br>Sie können Energie verwenden, um fortzufahren oder eine Werbung ansehen, um Energie aufzufüllen.", use_energy: "Energie Verwenden", watch_ad: "Werbung Ansehen", cancel: "Abbrechen",
+                remaining_energy: "Verbleibende Energie: {0}", out_of_energy: "Keine Energie!", out_of_energy_desc: "Sie haben keine Energie mehr. Sehen Sie sich eine Werbung an, um Ihre Energie aufzufüllen und fortzufahren.", energy_refilled: "Energie Aufgefüllt!",
+                ad_watch: "Werbung wird abgespielt...", ad_complete: "Werbung abgeschlossen! Ihre Energie wurde aufgefüllt.", time_limit: "Zeitlimit: {0} Sek", restart_title: "Level Neustarten", restart_message: "Sind Sie sicher, dass Sie das aktuelle Level neu starten möchten?",
+                time_unit: "Sek", moves_unit: "Züge", best_time_unit: "Sek", select_level: "Level Auswählen", close: "Schließen"
+            },
+            ja: {
+                game_title: "メモリーカードゲーム", levels: "レベル", scores: "スコア", time: "時間: {0} 秒", moves: "移動: {0}", best: "ベスト: {0}", level_scores: "レベルスコア",
+                start_title: "メモリーカードゲーム", start_description: "カードを揃えてみましょう！ゲームが始まると、すべてのカードが3秒間表示され、その後閉じてゲームが開始します。", start_game: "ゲーム開始",
+                complete_title: "おめでとう！", level_complete: "🎉 レベル {0} クリア！", time_taken: "時間: <b>{0} 秒</b><br>移動: <b>{1}</b>", next_level: "次のレベル", restart_level: "もう一度遊ぶ",
+                select_language: "言語を選択", confirm: "OK", restart_confirm: "現在のレベルを再開しますか？", yes: "はい", no: "いいえ", level: "レベル",
+                sound_on: "音声オン", sound_off: "音声オフ", light_theme: "ライトテーマ", dark_theme: "ダークテーマ", energy: "エネルギー", energy_low: "エネルギー不足！",
+                energy_warning: "このレベルを {0} 秒以内に完了する必要があります！<br><br>エネルギーを使用して続行するか、広告を見てエネルギーを補充できます。", use_energy: "エネルギーを使用", watch_ad: "広告を見る", cancel: "キャンセル",
+                remaining_energy: "残りエネルギー: {0}", out_of_energy: "エネルギー切れ！", out_of_energy_desc: "エネルギーがなくなりました。広告を見てエネルギーを補充し、続行してください。", energy_refilled: "エネルギー補充完了！",
+                ad_watch: "広告再生中...", ad_complete: "広告再生完了！エネルギーが補充されました。", time_limit: "制限時間: {0} 秒", restart_title: "レベル再開", restart_message: "現在のレベルを再開しますか？",
+                time_unit: "秒", moves_unit: "移動", best_time_unit: "秒", select_level: "レベルを選択", close: "閉じる"
+            },
+            ko: {
+                game_title: "메모리 카드 게임", levels: "레벨", scores: "점수", time: "시간: {0} 초", moves: "이동: {0}", best: "최고: {0}", level_scores: "레벨 점수",
+                start_title: "메모리 카드 게임", start_description: "카드를 맞춰보세요! 게임이 시작되면 모든 카드가 3초 동안 열리고, 이후 닫히며 게임이 시작됩니다.", start_game: "게임 시작",
+                complete_title: "축하합니다!", level_complete: "🎉 레벨 {0} 완료!", time_taken: "시간: <b>{0} 초</b><br>이동: <b>{1}</b>", next_level: "다음 레벨", restart_level: "다시 플레이",
+                select_language: "언어 선택", confirm: "확인", restart_confirm: "현재 레벨을 다시 시작하시겠습니까?", yes: "예", no: "아니오", level: "레벨",
+                sound_on: "소리 켜기", sound_off: "소리 끄기", light_theme: "라이트 테마", dark_theme: "다크 테마", energy: "에너지", energy_low: "에너지 부족!",
+                energy_warning: "이 레벨을 {0} 초 안에 완료해야 합니다!<br><br>에너지를 사용하여 계속하거나 광고를 시청하여 에너지를 충전할 수 있습니다.", use_energy: "에너지 사용", watch_ad: "광고 보기", cancel: "취소",
+                remaining_energy: "남은 에너지: {0}", out_of_energy: "에너지 없음!", out_of_energy_desc: "에너지가 없습니다. 광고를 시청하여 에너지를 충전하고 계속하세요.", energy_refilled: "에너지 충전 완료!",
+                ad_watch: "광고 재생 중...", ad_complete: "광고 재생 완료! 에너지가 충전되었습니다.", time_limit: "제한 시간: {0} 초", restart_title: "레벨 다시 시작", restart_message: "현재 레벨을 다시 시작하시겠습니까?",
+                time_unit: "초", moves_unit: "이동", best_time_unit: "초", select_level: "레벨 선택", close: "닫기"
+            },
+            ru: {
+                game_title: "Игра в Память", levels: "Уровни", scores: "Очки", time: "Время: {0} сек", moves: "Ходы: {0}", best: "Лучший: {0}", level_scores: "Очки по Уровням",
+                start_title: "Игра в Память", start_description: "Попробуйте сопоставить карты! Когда игра начнется, все карты останутся открытыми в течение 3 секунд, затем закроются, и игра начнется.", start_game: "Начать Игру",
+                complete_title: "Поздравляем!", level_complete: "🎉 Уровень {0} завершен!", time_taken: "Время: <b>{0} секунд</b><br>Ходы: <b>{1}</b>", next_level: "Следующий Уровень", restart_level: "Играть Снова",
+                select_language: "Выбрать Язык", confirm: "ОК", restart_confirm: "Вы уверены, что хотите перезапустить текущий уровень?", yes: "Да", no: "Нет", level: "Уровень",
+                sound_on: "Звук Вкл", sound_off: "Звук Выкл", light_theme: "Светлая Тема", dark_theme: "Темная Тема", energy: "Энергия", energy_low: "Мало Энергии!",
+                energy_warning: "Вам нужно завершить этот уровень за {0} секунд!<br><br>Вы можете использовать энергию для продолжения или посмотреть рекламу для пополнения энергии.", use_energy: "Использовать Энергию", watch_ad: "Смотреть Рекламу", cancel: "Отмена",
+                remaining_energy: "Осталось Энергии: {0}", out_of_energy: "Закончилась Энергия!", out_of_energy_desc: "У вас закончилась энергия. Посмотрите рекламу, чтобы пополнить энергию и продолжить.", energy_refilled: "Энергия Пополнена!",
+                ad_watch: "Идет реклама...", ad_complete: "Реклама завершена! Ваша энергия пополнена.", time_limit: "Лимит Времени: {0} сек", restart_title: "Перезапустить Уровень", restart_message: "Вы уверены, что хотите перезапустить текущий уровень?",
+                time_unit: "сек", moves_unit: "ходы", best_time_unit: "сек", select_level: "Выбрать Уровень", close: "Закрыть"
+            },
+            pt: {
+                game_title: "Jogo da Memória", levels: "Níveis", scores: "Pontuações", time: "Tempo: {0} seg", moves: "Movimentos: {0}", best: "Melhor: {0}", level_scores: "Pontuações por Nível",
+                start_title: "Jogo da Memória", start_description: "Tente combinar as cartas! Quando o jogo começar, todas as cartas permanecerão abertas por 3 segundos, depois fecharão и o jogo começará.", start_game: "Iniciar Jogo",
+                complete_title: "Parabéns!", level_complete: "🎉 Nível {0} concluído!", time_taken: "Tempo: <b>{0} segundos</b><br>Movimentos: <b>{1}</b>", next_level: "Próximo Nível", restart_level: "Jogar Novamente",
+                select_language: "Selecionar Idioma", confirm: "OK", restart_confirm: "Tem certeza de que deseja reiniciar o nível atual?", yes: "Sim", no: "Não", level: "Nível",
+                sound_on: "Som Ligado", sound_off: "Som Desligado", light_theme: "Tema Claro", dark_theme: "Tema Escuro", energy: "Energia", energy_low: "Energia Baixa!",
+                energy_warning: "Você precisa completar este nível em {0} segundos!<br><br>Você pode usar energia para continuar ou assistir a um anúncio para recarregar energia.", use_energy: "Usar Energia", watch_ad: "Ver Anúncio", cancel: "Cancelar",
+                remaining_energy: "Energia Restante: {0}", out_of_energy: "Sem Energia!", out_of_energy_desc: "Você ficou sem energia. Assista a um anúncio para recarregar sua energia e continuar.", energy_refilled: "Energia Recarregada!",
+                ad_watch: "Assistindo anúncio...", ad_complete: "Anúncio concluído! Sua energia foi recarregada.", time_limit: "Limite de Tempo: {0} seg", restart_title: "Reiniciar Nível", restart_message: "Tem certeza de que deseja reiniciar o nível atual?",
+                time_unit: "seg", moves_unit: "movimentos", best_time_unit: "seg", select_level: "Selecionar Nível", close: "Fechar"
+            },
+            it: {
+                game_title: "Gioco di Memoria", levels: "Livelli", scores: "Punteggi", time: "Tempo: {0} sec", moves: "Mosse: {0}", best: "Migliore: {0}", level_scores: "Punteggi per Livello",
+                start_title: "Gioco di Memoria", start_description: "Prova ad abbinare le carte! Quando il gioco inizia, tutte le carte rimangono aperte per 3 secondi, poi si chiudono e il gioco inizia.", start_game: "Inizia Gioco",
+                complete_title: "Congratulazioni!", level_complete: "🎉 Livello {0} completato!", time_taken: "Tempo: <b>{0} secondi</b><br>Mosse: <b>{1}</b>", next_level: "Prossimo Livello", restart_level: "Gioca di Nuovo",
+                select_language: "Seleziona Lingua", confirm: "OK", restart_confirm: "Sei sicuro di voler riavviare il livello corrente?", yes: "Sì", no: "No", level: "Livello",
+                sound_on: "Audio Attivato", sound_off: "Audio Disattivato", light_theme: "Tema Chiaro", dark_theme: "Tema Scuro", energy: "Energia", energy_low: "Energia Bassa!",
+                energy_warning: "Devi completare questo livello in {0} secondi!<br><br>Puoi usare l'energia per continuare o guardare un annuncio per ricaricare l'energia.", use_energy: "Usa Energia", watch_ad: "Guarda Annuncio", cancel: "Annulla",
+                remaining_energy: "Energia Rimasta: {0}", out_of_energy: "Energia Esaurita!", out_of_energy_desc: "Hai esaurito l'energia. Guarda un annuncio per ricaricare la tua energia e continuare.", energy_refilled: "Energia Ricaricata!",
+                ad_watch: "Guardando annuncio...", ad_complete: "Annuncio completato! La tua energia è stata ricaricata.", time_limit: "Limite di Tempo: {0} sec", restart_title: "Riavvia Livello", restart_message: "Sei sicuro di voler riavviare il livello corrente?",
+                time_unit: "sec", moves_unit: "mosse", best_time_unit: "sec", select_level: "Seleziona Livello", close: "Chiudi"
+            },
+            ar: {
+                game_title: "لعبة الذاكرة", levels: "المستويات", scores: "النتائج", time: "الوقت: {0} ثانية", moves: "الحركات: {0}", best: "الأفضل: {0}", level_scores: "نتائج المستويات",
+                start_title: "لعبة الذاكرة", start_description: "حاول مطابقة البطاقات! عندما تبدأ اللعبة، ستظل جميع البطاقات مفتوحة لمدة 3 ثوانٍ، ثم ستغلق وتبدأ اللعبة.", start_game: "بدء اللعبة",
+                complete_title: "مبروك!", level_complete: "🎉 اكتمل المستوى {0}!", time_taken: "الوقت: <b>{0} ثانية</b><br>الحركات: <b>{1}</b>", next_level: "المستوى التالي", restart_level: "العب مرة أخرى",
+                select_language: "اختر اللغة", confirm: "موافق", restart_confirm: "هل أنت متأكد أنك تريد إعادة تشغيل المستوى الحالي?", yes: "نعم", no: "لا", level: "المستوى",
+                sound_on: "الصوت مفعل", sound_off: "الصوت معطل", light_theme: "السمة الفاتحة", dark_theme: "السمة الداكنة", energy: "الطاقة", energy_low: "الطاقة منخفضة!",
+                energy_warning: "أنت بحاجة إلى إكمال هذا المستوى في {0} ثانية!<br><br>يمكنك استخدام الطاقة للمتابعة أو مشاهدة إعلان لتعبة الطاقة.", use_energy: "استخدم الطاقة", watch_ad: "شاهد الإعلان", cancel: "إلغاء",
+                remaining_energy: "الطاقة المتبقية: {0}", out_of_energy: "انتهت الطاقة!", out_of_energy_desc: "لقد نفدت طاقتك. شاهد إعلانًا لتعبة طاقتك والمتابعة.", energy_refilled: "تم تعبة الطاقة!",
+                ad_watch: "جاري تشغيل الإعلان...", ad_complete: "اكتمل الإعلان! تم تعبة طاقتك.", time_limit: "الوقت المحدد: {0} ثانية", restart_title: "إعادة تشغيل المستوى", restart_message: "هل أنت متأكد أنك تريد إعادة تشغيل المستوى الحالي?",
+                time_unit: "ثانية", moves_unit: "حركات", best_time_unit: "ثانية", select_level: "اختر المستوى", close: "إغلاق"
+            },
+            hi: {
+                game_title: "मेमोरी कार्ड गेम", levels: "स्तर", scores: "स्कोर", time: "समय: {0} सेकंड", moves: "चालें: {0}", best: "सर्वश्रेष्ठ: {0}", level_scores: "स्तर स्कोर",
+                start_title: "मेमोरी कार्ड गेम", start_description: "कार्ड मिलाने का प्रयास करें! जब गेम शुरू होता है, तो सभी कार्ड 3 सेकंड के लिए खुले रहेंगे, फिर बंद होंगे और गेम शुरू होगा।", start_game: "गेम शुरू करें",
+                complete_title: "बधाई हो!", level_complete: "🎉 स्तर {0} पूरा!", time_taken: "समय: <b>{0} सेकंड</b><br>चालें: <b>{1}</b>", next_level: "अगला स्तर", restart_level: "फिर से खेलें",
+                select_language: "भाषा चुनें", confirm: "ठीक है", restart_confirm: "क्या आप वाकई वर्तमान स्तर को पुनः आरंभ करना चाहते हैं?", yes: "हाँ", no: "नहीं", level: "स्तर",
+                sound_on: "ध्वनि चालू", sound_off: "ध्वनि बंद", light_theme: "हल्का थीम", dark_theme: "गहरा थीम", energy: "ऊर्जा", energy_low: "ऊर्जा कम!",
+                energy_warning: "आपको इस स्तर को {0} सेकंड में पूरा करना होगा!<br><br>आप जारी रखने के लिए ऊर्जा का उपयोग कर सकते हैं या ऊर्जा रिचार्ज करने के लिए विज्ञापन देख सकते हैं।", use_energy: "ऊर्जा का उपयोग करें", watch_ad: "विज्ञापन देखें", cancel: "रद्द करें",
+                remaining_energy: "शेष ऊर्जा: {0}", out_of_energy: "ऊर्जा खत्म!", out_of_energy_desc: "आपकी ऊर्जा खत्म हो गई है। अपनी ऊर्जा रिचार्ज करने और जारी रखने के लिए एक विज्ञापन देखें।", energy_refilled: "ऊर्जा रिचार्ज हो गई!",
+                ad_watch: "विज्ञापन चल रहा है...", ad_complete: "विज्ञापन पूरा! आपकी ऊर्जा रिचार्ज हो गई है।", time_limit: "समय सीमा: {0} सेकंड", restart_title: "स्तर पुनः आरंभ करें", restart_message: "क्या आप वाकई वर्तमान स्तर को पुनः आरंभ करना चाहते हैं?",
+                time_unit: "सेकंड", moves_unit: "चालें", best_time_unit: "सेकंड", select_level: "स्तर चुनें", close: "बंद करें"
+            },
+            id: {
+                game_title: "Permainan Kartu Memori", levels: "Level", scores: "Skor", time: "Waktu: {0} detik", moves: "Langkah: {0}", best: "Terbaik: {0}", level_scores: "Skor Level",
+                start_title: "Permainan Kartu Memori", start_description: "Cobalah mencocokkan kartu! Saat permainan dimulai, semua kartu akan tetap terbuka selama 3 detik, lalu menutup dan permainan dimulai.", start_game: "Mulai Permainan",
+                complete_title: "Selamat!", level_complete: "🎉 Level {0} selesai!", time_taken: "Waktu: <b>{0} detik</b><br>Langkah: <b>{1}</b>", next_level: "Level Berikutnya", restart_level: "Main Lagi",
+                select_language: "Pilih Bahasa", confirm: "OK", restart_confirm: "Apakah Anda yakin ingin memulai ulang level saat ini?", yes: "Ya", no: "Tidak", level: "Level",
+                sound_on: "Suara Menyala", sound_off: "Suara Mati", light_theme: "Tema Terang", dark_theme: "Tema Gelap", energy: "Energi", energy_low: "Energi Rendah!",
+                energy_warning: "Anda perlu menyelesaikan level ini dalam {0} detik!<br><br>Anda dapat menggunakan energi untuk melanjutkan atau menonton iklan untuk mengisi ulang energi.", use_energy: "Gunakan Energi", watch_ad: "Tonton Iklan", cancel: "Batal",
+                remaining_energy: "Energi Tersisa: {0}", out_of_energy: "Energi Habis!", out_of_energy_desc: "Energi Anda habis. Tonton iklan untuk mengisi ulang energi dan melanjutkan.", energy_refilled: "Energi Terisi Ulang!",
+                ad_watch: "Memutar iklan...", ad_complete: "Iklan selesai! Energi Anda telah terisi ulang.", time_limit: "Batas Waktu: {0} detik", restart_title: "Mulai Ulang Level", restart_message: "Apakah Anda yakin ingin memulai ulang level saat ini?",
+                time_unit: "detik", moves_unit: "langkah", best_time_unit: "detik", select_level: "Pilih Level", close: "Tutup"
+            },
+            th: {
+                game_title: "เกมการ์ดความจำ", levels: "เลเวล", scores: "คะแนน", time: "เวลา: {0} วินาที", moves: "การเคลื่อนไหว: {0}", best: "ดีที่สุด: {0}", level_scores: "คะแนนเลเวล",
+                start_title: "เกมการ์ดความจำ", start_description: "ลองจับคู่การ์ด! เมื่อเกมเริ่ม การ์ดทั้งหมดจะเปิดไว้ 3 วินาที จากนั้นจะปิดและเกมจะเริ่ม", start_game: "เริ่มเกม",
+                complete_title: "ยินดีด้วย!", level_complete: "🎉 เลเวล {0} สำเร็จ!", time_taken: "เวลา: <b>{0} วินาที</b><br>การเคลื่อนไหว: <b>{1}</b>", next_level: "เลเวลถัดไป", restart_level: "เล่นอีกครั้ง",
+                select_language: "เลือกภาษา", confirm: "ตกลง", restart_confirm: "คุณแน่ใจหรือไม่ว่าต้องการเริ่มเลเวลปัจจุบันใหม่?", yes: "ใช่", no: "ไม่", level: "เลเวล",
+                sound_on: "เปิดเสียง", sound_off: "ปิดเสียง", light_theme: "ธีมสว่าง", dark_theme: "ธีมมืด", energy: "พลังงาน", energy_low: "พลังงานต่ำ!",
+                energy_warning: "คุณต้องทำให้เสร็จเลเวลนี้ใน {0} วินาที!<br><br>คุณสามารถใช้พลังงานเพื่อดำเนินการต่อหรือดูโฆษณาเพื่อเติมพลังงาน", use_energy: "ใช้พลังงาน", watch_ad: "ดูโฆษณา", cancel: "ยกเลิก",
+                remaining_energy: "พลังงานคงเหลือ: {0}", out_of_energy: "พลังงานหมด!", out_of_energy_desc: "พลังงานของคุณหมดแล้ว ดูโฆษณาเพื่อเติมพลังงานและดำเนินการต่อ", energy_refilled: "เติมพลังงานเรียบร้อย!",
+                ad_watch: "กำลังเล่นโฆษณา...", ad_complete: "โฆษณาเสร็จสิ้น! พลังงานของคุณถูกเติมแล้ว", time_limit: "จำกัดเวลา: {0} วินาที", restart_title: "เริ่มเลเวลใหม่", restart_message: "คุณแน่ใจหรือไม่ว่าต้องการเริ่มเลเวลปัจจุบันใหม่?",
+                time_unit: "วินาที", moves_unit: "การเคลื่อนไหว", best_time_unit: "วินาที", select_level: "เลือกเลเวล", close: "ปิด"
+            },
+            vi: {
+                game_title: "Trò Chơi Thẻ Nhớ", levels: "Cấp độ", scores: "Điểm số", time: "Thời gian: {0} giây", moves: "Lượt di chuyển: {0}", best: "Tốt nhất: {0}", level_scores: "Điểm số Cấp độ",
+                start_title: "Trò Chơi Thẻ Nhớ", start_description: "Cố gắng ghép các thẻ! Khi trò chơi bắt đầu, tất cả các thẻ sẽ mở trong 3 giây, sau đó đóng lại và trò chơi bắt đầu.", start_game: "Bắt đầu Trò chơi",
+                complete_title: "Chúc mừng!", level_complete: "🎉 Hoàn thành Cấp độ {0}!", time_taken: "Thời gian: <b>{0} giây</b><br>Lượt di chuyển: <b>{1}</b>", next_level: "Cấp độ Tiếp theo", restart_level: "Chơi Lại",
+                select_language: "Chọn Ngôn ngữ", confirm: "OK", restart_confirm: "Bạn có chắc muốn khởi động lại cấp độ hiện tại?", yes: "Có", no: "Không", level: "Cấp độ",
+                sound_on: "Bật âm thanh", sound_off: "Tắt âm thanh", light_theme: "Chủ đề Sáng", dark_theme: "Chủ đề Tối", energy: "Năng lượng", energy_low: "Năng lượng Thấp!",
+                energy_warning: "Bạn cần hoàn thành cấp độ này trong {0} giây!<br><br>Bạn có thể sử dụng năng lượng để tiếp tục hoặc xem quảng cáo để nạp năng lượng.", use_energy: "Sử dụng Năng lượng", watch_ad: "Xem Quảng cáo", cancel: "Hủy",
+                remaining_energy: "Năng lượng Còn lại: {0}", out_of_energy: "Hết Năng lượng!", out_of_energy_desc: "Bạn đã hết năng lượng. Xem quảng cáo để nạp năng lượng và tiếp tục.", energy_refilled: "Nạp Năng lượng Thành công!",
+                ad_watch: "Đang phát quảng cáo...", ad_complete: "Quảng cáo hoàn thành! Năng lượng của bạn đã được nạp.", time_limit: "Giới hạn Thời gian: {0} giây", restart_title: "Khởi động lại Cấp độ", restart_message: "Bạn có chắc muốn khởi động lại cấp độ hiện tại?",
+                time_unit: "giây", moves_unit: "lượt di chuyển", best_time_unit: "giây", select_level: "Chọn Cấp độ", close: "Đóng"
+            },
+            nl: {
+                game_title: "Memory Spel", levels: "Levels", scores: "Scores", time: "Tijd: {0} sec", moves: "Zetten: {0}", best: "Beste: {0}", level_scores: "Level Scores",
+                start_title: "Memory Spel", start_description: "Probeer de kaarten te matchen! Wanneer het spel start, blijven alle kaarten 3 seconden open, daarna sluiten ze en begint het spel.", start_game: "Start Spel",
+                complete_title: "Gefeliciteerd!", level_complete: "🎉 Level {0} voltooid!", time_taken: "Tijd: <b>{0} seconden</b><br>Zetten: <b>{1}</b>", next_level: "Volgende Level", restart_level: "Opnieuw Spelen",
+                select_language: "Selecteer Taal", confirm: "OK", restart_confirm: "Weet je zeker dat je het huidige level opnieuw wilt starten?", yes: "Ja", no: "Nee", level: "Level",
+                sound_on: "Geluid Aan", sound_off: "Geluid Uit", light_theme: "Licht Thema", dark_theme: "Donker Thema", energy: "Energie", energy_low: "Energie Laag!",
+                energy_warning: "Je moet dit level in {0} seconden voltooien!<br><br>Je kunt energie gebruiken om door te gaan of een advertentie bekijken om energie bij te vullen.", use_energy: "Gebruik Energie", watch_ad: "Bekijk Advertentie", cancel: "Annuleren",
+                remaining_energy: "Resterende Energie: {0}", out_of_energy: "Geen Energie!", out_of_energy_desc: "Je hebt geen energie meer. Bekijk een advertentie om je energie bij te vullen en door te gaan.", energy_refilled: "Energie Bijgevuld!",
+                ad_watch: "Advertentie afspelen...", ad_complete: "Advertentie voltooid! Je energie is bijgevuld.", time_limit: "Tijdslimiet: {0} sec", restart_title: "Level Opnieuw Starten", restart_message: "Weet je zeker dat je het huidige level opnieuw wilt starten?",
+                time_unit: "sec", moves_unit: "zetten", best_time_unit: "sec", select_level: "Selecteer Level", close: "Sluiten"
+            },
+            pl: {
+                game_title: "Gra Memory", levels: "Poziomy", scores: "Wyniki", time: "Czas: {0} sek", moves: "Ruchy: {0}", best: "Najlepszy: {0}", level_scores: "Wyniki Poziomów",
+                start_title: "Gra Memory", start_description: "Spróbuj dopasować karty! Kiedy gra się zacznie, wszystkie karty pozostaną otwarte przez 3 sekundy, potem zamkną się и gra się rozpocznie.", start_game: "Rozpocznij Grę",
+                complete_title: "Gratulacje!", level_complete: "🎉 Poziom {0} ukończony!", time_taken: "Czas: <b>{0} sekund</b><br>Ruchy: <b>{1}</b>", next_level: "Następny Poziom", restart_level: "Zagraj Ponownie",
+                select_language: "Wybierz Język", confirm: "OK", restart_confirm: "Czy na pewno chcesz ponownie uruchomić obecny poziom?", yes: "Tak", no: "Nie", level: "Poziom",
+                sound_on: "Dźwięk Włączony", sound_off: "Dźwięk Wyłączony", light_theme: "Jasny Motyw", dark_theme: "Ciemny Motyw", energy: "Energia", energy_low: "Niska Energia!",
+                energy_warning: "Musisz ukończyć ten poziom w {0} sekund!<br><br>Możesz użyć energii, aby kontynuować lub obejrzeć reklamę, aby uzupełnić energię.", use_energy: "Użyj Energii", watch_ad: "Obejrzyj Reklamę", cancel: "Anuluj",
+                remaining_energy: "Pozostała Energia: {0}", out_of_energy: "Brak Energii!", out_of_energy_desc: "Skończyła ci się energia. Obejrzyj reklamę, aby uzupełnić energię i kontynuować.", energy_refilled: "Energia Uzupełniona!",
+                ad_watch: "Odtwarzanie reklamy...", ad_complete: "Reklama zakończona! Twoja energia została uzupełniona.", time_limit: "Limit Czasu: {0} sek", restart_title: "Uruchom Ponownie Poziom", restart_message: "Czy na pewno chcesz ponownie uruchomić obecny poziom?",
+                time_unit: "sek", moves_unit: "ruchy", best_time_unit: "sek", select_level: "Wybierz Poziom", close: "Zamknij"
+            },
+            sv: {
+                game_title: "Memory Spel", levels: "Nivåer", scores: "Poäng", time: "Tid: {0} sek", moves: "Drag: {0}", best: "Bästa: {0}", level_scores: "Nivå Poäng",
+                start_title: "Memory Spel", start_description: "Försök matcha korten! När spelet startar förblir alla kort öppna i 3 sekunder, sedan stängs de och spelet börjar.", start_game: "Starta Spel",
+                complete_title: "Grattis!", level_complete: "🎉 Nivå {0} avslutad!", time_taken: "Tid: <b>{0} sekunder</b><br>Drag: <b>{1}</b>", next_level: "Nästa Nivå", restart_level: "Spela Igen",
+                select_language: "Välj Språk", confirm: "OK", restart_confirm: "Är du säker på att du vill starta om nuvarande nivå?", yes: "Ja", no: "Nej", level: "Nivå",
+                sound_on: "Ljud På", sound_off: "Ljud Av", light_theme: "Ljust Tema", dark_theme: "Mörkt Tema", energy: "Energi", energy_low: "Låg Energi!",
+                energy_warning: "Du måste slutföra denna nivå på {0} sekunder!<br><br>Du kan använda energi för att fortsätta eller titta på en annons för att fylla på energin.", use_energy: "Använd Energi", watch_ad: "Titta på Annons", cancel: "Avbryt",
+                remaining_energy: "Återstående Energi: {0}", out_of_energy: "Slut på Energi!", out_of_energy_desc: "Du har slut på energi. Titta på en annons för att fylla på din energi och fortsätta.", energy_refilled: "Energi Påfylld!",
+                ad_watch: "Spelar annons...", ad_complete: "Annons slutförd! Din energi har fyllts på.", time_limit: "Tidsgräns: {0} sek", restart_title: "Starta Om Nivå", restart_message: "Är du säker på att du vill starta om nuvarande nivå?",
+                time_unit: "sek", moves_unit: "drag", best_time_unit: "sek", select_level: "Välj Nivå", close: "Stäng"
+            },
+            uk: {
+                game_title: "Гра в Пам'ять", levels: "Рівні", scores: "Результати", time: "Час: {0} сек", moves: "Ходи: {0}", best: "Найкращий: {0}", level_scores: "Результати за Рівнями",
+                start_title: "Гра в Пам'ять", start_description: "Спробуйте знайти пари карток! Коли гра починається, всі картки залишаються відкритими протягом 3 секунд, потім закриваються і гра починається.", start_game: "Почати Гру",
+                complete_title: "Вітаємо!", level_complete: "🎉 Рівень {0} завершено!", time_taken: "Час: <b>{0} секунд</b><br>Ходи: <b>{1}</b>", next_level: "Наступний Рівень", restart_level: "Грати Знову",
+                select_language: "Вибрати Мову", confirm: "OK", restart_confirm: "Ви впевнені, що хочете перезапустити поточний рівень?", yes: "Так", no: "Ні", level: "Рівень",
+                sound_on: "Звук Увімкнено", sound_off: "Звук Вимкнено", light_theme: "Світла Тема", dark_theme: "Темна Тема", energy: "Енергія", energy_low: "Мало Енергії!",
+                energy_warning: "Вам потрібно завершити цей рівень за {0} секунд!<br><br>Ви можете використати енергію для продовження або подивитися рекламу для поповнення енергії.", use_energy: "Використати Енергію", watch_ad: "Дивитися Рекламу", cancel: "Скасувати",
+                remaining_energy: "Залишок Енергії: {0}", out_of_energy: "Закінчилася Енергія!", out_of_energy_desc: "У вас закінчилася енергія. Подивіться рекламу, щоб поповнити енергію та продовжити.", energy_refilled: "Енергію Поповнено!",
+                ad_watch: "Відтворення реклами...", ad_complete: "Рекламу завершено! Вашу енергію поповнено.", time_limit: "Ліміт Часу: {0} сек", restart_title: "Перезапустити Рівень", restart_message: "Ви впевнені, що хочете перезапустити поточний рівень?",
+                time_unit: "сек", moves_unit: "ходи", best_time_unit: "сек", select_level: "Вибрати Рівень", close: "Закрити"
+            }
+        };
 
-// --- TEMA DEĞİŞTİRME FONKSİYONLARI ---
-function applyTheme(theme) {
-  if (theme === 'dark') {
-    document.body.classList.add('dark-mode');
-    themeToggle.textContent = '☀️';
-    themeToggle.title = t('light_theme');
-  } else {
-    document.body.classList.remove('dark-mode');
-    themeToggle.textContent = '🌙';
-    themeToggle.title = t('dark_theme');
-  }
-}
+        // Oyun sabitleri
+        const TOTAL_LEVELS = 200;
+        const CARDS_PER_LEVEL = 6;
+        const SHOW_CARDS_TIME = 3000;
+        const ENERGY_START_LEVEL = 5;
+        const ENERGY_MAX = 3;
+        const ENERGY_BASE_LIMIT = 25;
+        const ENERGY_INC_PER_LEVEL = 5;
 
-themeToggle.onclick = function() {
-  const isDarkMode = document.body.classList.contains('dark-mode');
-  const newTheme = isDarkMode ? 'light' : 'dark';
-  applyTheme(newTheme);
-  localStorage.setItem('memoryGameTheme', newTheme);
-};
+        // Oyun durumu
+        let currentLevel = 1;
+        let unlockedLevel = 1;
+        let timer = 0;
+        let timerInterval = null;
+        let moves = 0;
+        let bestTimes = JSON.parse(localStorage.getItem('memoryBestTimes') || '{}');
+        let bestMoves = JSON.parse(localStorage.getItem('memoryBestMoves') || '{}');
+        let firstCard = null;
+        let secondCard = null;
+        let lockBoard = false;
+        let matchedPairs = 0;
+        let soundOn = true;
+        let isPaused = false;
+        let currentLanguage = localStorage.getItem('memoryLanguage') || 'tr';
+        let energy = ENERGY_MAX;
+        let energyCheckMultiplier = 1;
+        let energyTimeoutActive = false;
 
-// --- SES FONKSİYONLARI ---
-function playSound(audio) {
-  if (soundOn) {
-    audio.currentTime = 0;
-    audio.play();
-  }
-}
+        // Enerji yönetimi
+        const ENERGY_STORAGE_KEY = 'memoryGameEnergy';
+        const ENERGY_LAST_LEVEL_KEY = 'memoryGameEnergyLevel';
 
-function updateSoundButton() {
-  if (soundOn) {
-    soundToggle.innerHTML = '🔊';
-    soundToggle.classList.add('active');
-    soundToggle.title = t('sound_off');
-  } else {
-    soundToggle.innerHTML = '🔇';
-    soundToggle.classList.remove('active');
-    soundToggle.title = t('sound_on');
-  }
-}
-soundToggle.onclick = function() {
-  soundOn = !soundOn;
-  localStorage.setItem('memoryGameSoundOn', JSON.stringify(soundOn));
-  updateSoundButton();
-};
+        // Emoji seti
+		const emojis = [ '🍎', '🍌', '🍇', '🍉', '🍒', '🍋', '🍓', '🍑', '🍍', '🥝', '🥑', '🍆', '🥕', '🌽', '🍔', '🍟', '🍕', '🍩', '🍪', '🍫', '🌮', '🍦', '🍭', '🍬', '🧁', '🍰', '🎂', '☕', '🥤', '🍵','🍼', '🥛', '🍷', '🍸', '🍹', '🥃', '🧊','🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯','🦁', '🐮', '🐸', '🐵', '🐔', '🐧', '🐦', '🐤', '🦆','🦅', '🦉', '🦇', '🐺', '🐴', '🦄', '🐝', '🐛', '🦋','🐌', '🐞', '🐜', '🦟', '🦗', '🕷', '🦂', '🐢', '🐍', '🦎','🦖', '🦕', '🐙', '🦑', '🦐', '🦞', '🦀', '🐡', '🐠', '🐟','🐬', '🐳', '🐋', '🦈', '🐊', '🐅', '🐆', '🦓', '🦍', '🦧','🐘', '🦛', '🦏', '🐪', '🐫', '🦒', '🦘', '🐃', '🐂', '🐄','🐎', '🐏', '🐐', '🦙', '🐕', '🐩', '🐈', '🐓','🦃', '🦚', '🦜', '🦢', '🦩', '🐇', '🦝', '🦨', '🦡', '🦦','🦥', '🐁', '🐀', '🦔', '🌵', '🎄', '🌲', '🌳', '🌴', '🌱','🌿', '☘', '🍀', '🎍', '🎋', '🍃', '🍂', '🍁', '🍄', '🐚','🌾', '💐', '🌷', '🌹', '🥀', '🌺', '🌸', '🌼', '🌻', '🌞', '🎳', '🎮', '🧩', '🚗', '🚕', '🚙','🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚐', '🚚', '🚛', '🚜','🛴', '🚲', '🛵', '🏍', '🚨', '🚔', '🚍', '🚘', '🚖', '🚡','🚠', '🚟', '🚃', '🚋', '🚞', '🚝', '🚄', '🚅', '🚈', '🚂','🚆', '🚇', '🚊', '🚉', '✈', '🛫', '🛬', '🛩', '💺', '🛰','🚀', '🛸', '🚁', '🛶', '⛵', '🚢','⚓', '🚧', '⛽', '🚏', '🚦'];
+        
+		// DOM elementleri
+        const gameBoard = document.getElementById('game-board');
+        const timerSpan = document.getElementById('timer');
+        const movesSpan = document.getElementById('moves');
+        const bestSpan = document.getElementById('best');
+        const messageDiv = document.getElementById('message');
+        const scoreList = document.getElementById('score-list');
+        const energyBar = document.getElementById('energy-bar');
+        const energyIcons = document.getElementById('energy-icons');
+        const energyLabel = document.getElementById('energy-label');
+        const soundToggle = document.getElementById('sound-toggle');
+        const restartBtn = document.getElementById('restart-btn');
+        const themeToggle = document.getElementById('theme-toggle');
+        const languageToggle = document.getElementById('language-toggle');
+        const levelsBtn = document.getElementById('levels-btn');
+        const scoresBtn = document.getElementById('scores-btn');
+        const startModal = document.getElementById('start-modal');
+        const completeModal = document.getElementById('complete-modal');
+        const restartModal = document.getElementById('restart-modal');
+        const energyModal = document.getElementById('energy-modal');
+        const adModal = document.getElementById('ad-modal');
+        const languageModal = document.getElementById('language-modal');
+        const levelsModal = document.getElementById('levels-modal');
+        const scoresModal = document.getElementById('scores-modal');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const nextLevelBtn = document.getElementById('next-level-btn');
+        const restartLevelBtn = document.getElementById('restart-level-btn');
+        const confirmRestartBtn = document.getElementById('confirm-restart-btn');
+        const cancelRestartBtn = document.getElementById('cancel-restart-btn');
+        const useEnergyBtn = document.getElementById('use-energy-btn');
+        const watchAdBtn = document.getElementById('watch-ad-btn');
+        const cancelEnergyBtn = document.getElementById('cancel-energy-btn');
+        const closeAdBtn = document.getElementById('close-ad-btn');
+        const languageConfirm = document.getElementById('language-confirm');
+        const levelsCloseBtn = document.getElementById('levels-close-btn');
+        const scoresCloseBtn = document.getElementById('scores-close-btn');
+        const levelsGrid = document.getElementById('levels-grid');
+        const levelsModalTitle = document.getElementById('levels-modal-title');
+        const scoresModalTitle = document.getElementById('scores-modal-title');
+        const flipSound = document.getElementById('flip-sound');
+        const matchSound = document.getElementById('match-sound');
+        const completeSound = document.getElementById('complete-sound');
+        const wrongSound = document.getElementById('wrong-sound');
 
-// --- ENERJİ YÖNETİMİ ---
-function loadEnergy(level) {
-  let stored = JSON.parse(localStorage.getItem(ENERGY_STORAGE_KEY) || 'null');
-  let lastLevel = parseInt(localStorage.getItem(ENERGY_LAST_LEVEL_KEY) || '0', 10);
-  if (!stored || isNaN(lastLevel) || lastLevel !== level) {
-    energy = ENERGY_MAX;
-    localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
-    localStorage.setItem(ENERGY_LAST_LEVEL_KEY, level);
-  } else {
-    energy = stored;
-  }
-  updateEnergyBar();
-}
-
-function saveEnergy() {
-  localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
-  localStorage.setItem(ENERGY_LAST_LEVEL_KEY, currentLevel);
-}
-
-function updateEnergyBar() {
-  if (currentLevel >= ENERGY_START_LEVEL) {
-    energyBar.style.display = 'flex';
-    energyBar.innerHTML = '';
-    let label = document.createElement('span');
-    label.textContent = t('energy') + ':';
-    label.style.fontWeight = 'bold';
-    label.style.marginRight = '6px';
-    energyBar.appendChild(label);
-    for (let i = 0; i < ENERGY_MAX; i++) {
-      let icon = document.createElement('span');
-      icon.className = 'energy-icon' + (i < energy ? ' full' : '');
-      icon.innerHTML = '⚡';
-      energyBar.appendChild(icon);
-    }
-    if (window.energyFullActive) {
-      let text = document.createElement('span');
-      text.id = 'energy-full-text';
-      text.textContent = ' ' + t('energy_full');
-      text.style.color = '#4caf50';
-      text.style.fontWeight = 'bold';
-      text.style.marginLeft = '8px';
-      energyBar.appendChild(text);
-    }
-  } else {
-    energyBar.style.display = 'none';
-  }
-}
-
-// --- BUTON VE TOGGLE FONKSİYONLARI ---
-restartBtn.onclick = function() {
-  showModal(
-    t('restart_confirm'), '', t('yes'),
-    () => startGame(currentLevel), t('no'), hideModal
-  );
-};
-
-function setupToggles() {
-  const headers = document.querySelectorAll('.toggle-header');
-  headers.forEach(header => {
-    const content = header.nextElementSibling;
-    const arrow = header.querySelector('.toggle-arrow');
-    header.classList.remove('open');
-    content.classList.remove('open');
-    arrow.textContent = '▶';
-    header.onclick = () => {
-      header.classList.toggle('open');
-      content.classList.toggle('open');
-      arrow.textContent = content.classList.contains('open') ? '▼' : '▶';
-    };
-  });
-}
-
-// --- ANA OYUN MANTIĞI ---
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-function renderLevelButtons() {
-  levelSelect.innerHTML = '';
-  for (let i = 1; i <= TOTAL_LEVELS; i++) {
-    const btn = document.createElement('button');
-    btn.textContent = i;
-    btn.dataset.level = i;
-    
-    if (i === currentLevel) {
-      btn.classList.add('active');
-    }
-
-    if (i > unlockedLevel) {
-      btn.classList.add('locked');
-      btn.disabled = true;
-    } else {
-      btn.classList.add('unlocked');
-      btn.disabled = false;
-    }
-
-    btn.onclick = () => {
-      if (i <= unlockedLevel) {
-        startGame(i);
-      }
-    };
-
-    levelSelect.appendChild(btn);
-  }
-}
-
-function startGame(level) {
-  currentLevel = level;
-  renderLevelButtons();
-  resetGame();
-  createBoard();
-  startTimer();
-  updateBestTime();
-  updateScoreHistory();
-  messageDiv.textContent = '';
-  hideModal();
-  if (currentLevel >= ENERGY_START_LEVEL) {
-    loadEnergy(currentLevel);
-  } else {
-    energyBar.style.display = 'none';
-  }
-}
-
-function resetGame() {
-  clearInterval(timerInterval);
-  isPaused = false;
-  timer = 0;
-  moves = 0;
-  energyCheckMultiplier = 1;
-  updateGameInfoText();
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
-  matchedPairs = 0;
-  board.innerHTML = '';
-}
-
-function createBoard() {
-  const pairs = START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT;
-  const gridCols = Math.ceil(Math.sqrt(pairs * 2));
-  const gridRows = Math.ceil((pairs * 2) / gridCols);
-  let chosenEmojis = shuffle([...emojis]).slice(0, pairs);
-  let cards = shuffle([...chosenEmojis, ...chosenEmojis]);
-  board.style.gridTemplateColumns = `repeat(${gridCols}, minmax(40px, 1fr))`;
-  board.style.gridTemplateRows = `repeat(${gridRows}, minmax(40px, 1fr))`;
-  cards.forEach((emoji, idx) => {
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.dataset.emoji = emoji;
-    card.innerHTML = `<span style="opacity:0">${emoji}</span>`;
-    card.addEventListener('click', onCardClick);
-    board.appendChild(card);
-  });
-}
-
-function onCardClick(e) {
-  if (lockBoard || isPaused) return;
-  const card = e.currentTarget;
-  if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
-  card.classList.add('flipped');
-  card.querySelector('span').style.opacity = '1';
-  if (!firstCard) {
-    firstCard = card;
-    return;
-  }
-  secondCard = card;
-  lockBoard = true;
-  moves++;
-  movesSpan.textContent = t('moves', moves);
-  if (firstCard.dataset.emoji === secondCard.dataset.emoji) {
-    firstCard.classList.add('matched');
-    secondCard.classList.add('matched');
-    matchedPairs++;
-    playSound(audioMatch);
-    if (matchedPairs === START_PAIRS + (currentLevel - 1) * PAIR_INCREMENT) {
-      clearInterval(timerInterval);
-      setTimeout(showLevelComplete, 600);
-      saveBestScores();
-    }
-    resetFlipped();
-  } else {
-    playSound(audioWrong);
-    setTimeout(() => {
-      firstCard.classList.remove('flipped');
-      secondCard.classList.remove('flipped');
-      firstCard.querySelector('span').style.opacity = '0';
-      secondCard.querySelector('span').style.opacity = '0';
-      resetFlipped();
-    }, 900);
-  }
-}
-
-function resetFlipped() {
-  firstCard = null;
-  secondCard = null;
-  lockBoard = false;
-}
-
-function getEnergyLimit(level) {
-  if (level < ENERGY_START_LEVEL) return null;
-  return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
-}
-
-function startTimer() {
-  clearInterval(timerInterval);
-  timer = 0;
-  updateGameInfoText();
-  runTimer();
-}
-
-function runTimer() {
-  timerInterval = setInterval(() => {
-    timer++;
-    updateGameInfoText();
-    checkEnergyTimeout();
-  }, 1000);
-}
-
-function checkEnergyTimeout() {
-  if (currentLevel < ENERGY_START_LEVEL) return;
-  const limit = getEnergyLimit(currentLevel);
-  
-  // 5. bölüm için: 25sn, 50sn, 75sn, 100sn, 125sn, 150sn, 175sn, 200sn...
-  // Diğer bölümler için: limit + (enerji kullanım sayısı * limit)
-  const currentTargetTime = limit + ((energyCheckMultiplier - 1) * limit);
-
-  if (timer >= currentTargetTime) {
-    clearInterval(timerInterval);
-    if (energy > 0) {
-      showEnergyUseModal();
-    } else {
-      showOutOfEnergyModal();
-    }
-  }
-}
-
-// --- SKOR YÖNETİMİ ---
-function updateBestTime() {
-  const best = bestTimes[currentLevel];
-  bestTimeSpan.textContent = t('best', best ? best + ' ' + (currentLanguage === 'en' ? 'sec' : 'sn') : '-');
-}
-
-function updateScoreHistory() {
-  let html = '<b>' + t('level_scores') + '</b><ul>';
-  for (let i = 1; i <= unlockedLevel; i++) {
-    // Dil çevirilerini kullanarak zaman ve hamle birimlerini al
-    const timeSuffix = currentLanguage === 'en' ? ' sec' : 
-                      currentLanguage === 'tr' ? ' sn' : 
-                      currentLanguage === 'zh' ? ' 秒' :
-                      currentLanguage === 'es' ? ' seg' :
-                      currentLanguage === 'fr' ? ' sec' :
-                      currentLanguage === 'de' ? ' Sek' :
-                      currentLanguage === 'ja' ? ' 秒' :
-                      currentLanguage === 'ko' ? ' 초' :
-                      currentLanguage === 'ru' ? ' сек' :
-                      currentLanguage === 'pt' ? ' seg' :
-                      currentLanguage === 'it' ? ' sec' :
-                      currentLanguage === 'ar' ? ' ثانية' :
-                      currentLanguage === 'hi' ? ' सेकंड' :
-                      currentLanguage === 'id' ? ' detik' :
-                      currentLanguage === 'th' ? ' วินาที' :
-                      currentLanguage === 'vi' ? ' giây' :
-                      currentLanguage === 'nl' ? ' sec' :
-                      currentLanguage === 'pl' ? ' sek' :
-                      currentLanguage === 'sv' ? ' sek' :
-                      currentLanguage === 'uk' ? ' сек' : ' sec';
-    
-    const movesText = currentLanguage === 'en' ? ' moves' : 
-                     currentLanguage === 'tr' ? ' hamle' : 
-                     currentLanguage === 'zh' ? ' 移动' :
-                     currentLanguage === 'es' ? ' movimientos' :
-                     currentLanguage === 'fr' ? ' mouvements' :
-                     currentLanguage === 'de' ? ' Züge' :
-                     currentLanguage === 'ja' ? ' 移動' :
-                     currentLanguage === 'ko' ? ' 이동' :
-                     currentLanguage === 'ru' ? ' ходы' :
-                     currentLanguage === 'pt' ? ' movimentos' :
-                     currentLanguage === 'it' ? ' mosse' :
-                     currentLanguage === 'ar' ? ' حركات' :
-                     currentLanguage === 'hi' ? ' चालें' :
-                     currentLanguage === 'id' ? ' langkah' :
-                     currentLanguage === 'th' ? ' การเคลื่อนไหว' :
-                     currentLanguage === 'vi' ? ' lượt di chuyển' :
-                     currentLanguage === 'nl' ? ' zetten' :
-                     currentLanguage === 'pl' ? ' ruchy' :
-                     currentLanguage === 'sv' ? ' drag' :
-                     currentLanguage === 'uk' ? ' ходи' : ' moves';
-    
-    html += `<li>${t('level')} ${i}: <span>${bestTimes[i] ? bestTimes[i] + timeSuffix : '-'} / ${bestMoves[i] ? bestMoves[i] + movesText : '-'}</span></li>`;
-  }
-  html += '</ul>';
-  scoreHistoryDiv.innerHTML = html;
-}
-
-function saveBestScores() {
-  if (!bestTimes[currentLevel] || timer < bestTimes[currentLevel]) {
-    bestTimes[currentLevel] = timer;
-    localStorage.setItem('memoryGameBestTimes', JSON.stringify(bestTimes));
-  }
-  if (!bestMoves[currentLevel] || moves < bestMoves[currentLevel]) {
-    bestMoves[currentLevel] = moves;
-    localStorage.setItem('memoryGameBestMoves', JSON.stringify(bestMoves));
-  }
-}
-
-function showLevelComplete() {
-  playSound(audioLevel);
-  window.energyFullActive = false;
-  updateEnergyBar();
-  const nextButtonText = currentLevel < TOTAL_LEVELS ? t('next_level') : null;
-  showModal(
-    t('level_complete', currentLevel),
-    t('time_taken', timer, moves),
-    nextButtonText,
-    () => {
-      if (currentLevel < TOTAL_LEVELS) {
-        if (unlockedLevel < currentLevel + 1) {
-          unlockedLevel = currentLevel + 1;
-          localStorage.setItem('memoryGameUnlockedLevel', unlockedLevel);
+        // Dil fonksiyonu
+        function t(key, ...params) {
+            if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                let text = translations[currentLanguage][key];
+                params.forEach((param, index) => {
+                    text = text.replace(`{${index}}`, param);
+                });
+                return text;
+            }
+            return key;
         }
-        startGame(currentLevel + 1);
-      }
-    }
-  );
-  renderLevelButtons();
-  updateScoreHistory();
-}
 
-// --- MODAL KUTU FONKSİYONLARI ---
-function showModal(title, content, buttonText, buttonCallback, secondaryText, secondaryCallback) {
-  hideModal();
-  const modalContainer = document.createElement('div');
-  modalContainer.id = 'dynamic-modal';
-  modalContainer.className = 'modal visible';
-  let buttonsHTML = '';
-  if (buttonText) {
-    buttonsHTML += `<button class="modal-btn primary">${buttonText}</button>`;
-  }
-  if (secondaryText) {
-    buttonsHTML += `<button class="modal-btn-secondary secondary">${secondaryText}</button>`;
-  }
-  modalContainer.innerHTML = `
-         <div class="modal-content">
-             <h2>${title}</h2>
-             <div>${content}</div>
-             <div style="margin-top:18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                 ${buttonsHTML}
-             </div>
-         </div>`;
-  document.body.appendChild(modalContainer);
-  if (buttonText && buttonCallback) {
-    modalContainer.querySelector('.modal-btn.primary').onclick = () => { buttonCallback(); };
-  }
-  if (secondaryText && secondaryCallback) {
-    modalContainer.querySelector('.modal-btn-secondary.secondary').onclick = () => { secondaryCallback(); };
-  }
-}
+        // Enerji yönetimi
+        function loadEnergy(level) {
+            let stored = JSON.parse(localStorage.getItem(ENERGY_STORAGE_KEY) || 'null');
+            let lastLevel = parseInt(localStorage.getItem(ENERGY_LAST_LEVEL_KEY) || '0', 10);
+            
+            if (!stored || isNaN(lastLevel) || lastLevel !== level) {
+                energy = ENERGY_MAX;
+                localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
+                localStorage.setItem(ENERGY_LAST_LEVEL_KEY, level);
+            } else {
+                energy = stored;
+            }
+            updateEnergyBar();
+        }
 
-function hideModal() {
-  const modal = document.querySelector('#dynamic-modal');
-  if (modal) modal.remove();
-}
+        function saveEnergy() {
+            localStorage.setItem(ENERGY_STORAGE_KEY, JSON.stringify(energy));
+            localStorage.setItem(ENERGY_LAST_LEVEL_KEY, currentLevel);
+        }
 
-// DEĞİŞTİRİLDİ: Enerji kullanma modalı
-function showEnergyUseModal() {
-  const limit = getEnergyLimit(currentLevel);
-  const currentTargetTime = limit + ((energyCheckMultiplier - 1) * limit);
-  
-  showModal(
-    t('energy_low'), 
-    t('energy_time_limit', currentTargetTime, energy), 
-    t('use_energy'),
-    () => {
-      energy--;
-      energyCheckMultiplier++;
-      saveEnergy();
-      updateEnergyBar();
-      resumeTimer();
-      hideModal();
-    },
-    t('no_energy'),
-    () => {
-      hideModal();
-      setTimeout(() => {
-        showModal(
-          t('are_you_sure'), 
-          t('restart_desc'), 
-          t('restart'),
-          () => { startGame(currentLevel); },
-          t('back'),
-          () => {
-            hideModal();
-            setTimeout(showEnergyUseModal, 10);
-          }
-        );
-      }, 10);
-    }
-  );
-}
+        function updateEnergyBar() {
+            if (currentLevel >= ENERGY_START_LEVEL) {
+                energyBar.style.display = 'flex';
+                energyLabel.textContent = t('energy') + ':';
+                energyIcons.innerHTML = '';
+                
+                for (let i = 0; i < ENERGY_MAX; i++) {
+                    const icon = document.createElement('div');
+                    icon.className = 'energy-icon' + (i < energy ? ' full' : '');
+                    icon.innerHTML = '⚡';
+                    energyIcons.appendChild(icon);
+                }
+            } else {
+                energyBar.style.display = 'none';
+            }
+        }
 
-// DEĞİŞTİRİLDİ: Enerji bitti modalı - YENİ SEKMEDE REKLAM AÇMA ÖZELLİĞİ EKLENDİ
-function showOutOfEnergyModal() {
-  const limit = getEnergyLimit(currentLevel);
-  const currentTargetTime = limit + ((energyCheckMultiplier - 1) * limit);
-  
-  showModal(
-    t('out_of_energy'),
-    t('out_of_energy_desc'),
-    t('watch_ad'),
-    () => {
-      hideModal();
-      // Yeni sekmede reklam açma
-      openAdInNewTab();
-    },
-    t('restart'),
-    () => {
-      hideModal();
-      setTimeout(() => {
-        showModal(
-          t('sure_restart'),
-          t('restart_desc'),
-          t('yes_restart'),
-          () => {
+        function getEnergyLimit(level) {
+            if (level < ENERGY_START_LEVEL) return null;
+            return ENERGY_BASE_LIMIT + (level - ENERGY_START_LEVEL) * ENERGY_INC_PER_LEVEL;
+        }
+
+        function checkEnergyTimeout() {
+            if (currentLevel < ENERGY_START_LEVEL || energyTimeoutActive) return;
+            
+            const limit = getEnergyLimit(currentLevel);
+            const currentTargetTime = limit + ((energyCheckMultiplier - 1) * limit);
+            
+            if (timer >= currentTargetTime) {
+                energyTimeoutActive = true;
+                clearInterval(timerInterval);
+                playSound(warningSound);
+                
+                if (energy > 0) {
+                    showEnergyModal();
+                } else {
+                    showOutOfEnergyModal();
+                }
+            }
+        }
+
+        function showEnergyModal() {
+            const limit = getEnergyLimit(currentLevel);
+            const currentTargetTime = limit + ((energyCheckMultiplier - 1) * limit);
+            
+            document.getElementById('energy-title').textContent = t('energy_low');
+            document.getElementById('energy-message').innerHTML = 
+                t('energy_warning', currentTargetTime) + '<br><br><b>' + t('remaining_energy', energy) + '</b>';
+            
+            useEnergyBtn.textContent = t('use_energy');
+            watchAdBtn.textContent = t('watch_ad');
+            cancelEnergyBtn.textContent = t('cancel');
+            
+            useEnergyBtn.style.display = 'block';
+            watchAdBtn.style.display = 'block';
+            
+            energyModal.classList.add('visible');
+        }
+
+        function showOutOfEnergyModal() {
+            document.getElementById('energy-title').textContent = t('out_of_energy');
+            document.getElementById('energy-message').innerHTML = t('out_of_energy_desc');
+            
+            useEnergyBtn.style.display = 'none';
+            watchAdBtn.textContent = t('watch_ad');
+            cancelEnergyBtn.textContent = t('cancel');
+            
+            energyModal.classList.add('visible');
+        }
+
+        function useEnergy() {
+            energy--;
+            energyCheckMultiplier++;
+            saveEnergy();
+            updateEnergyBar();
+            energyModal.classList.remove('visible');
+            energyTimeoutActive = false;
+            resumeTimer();
+        }
+
+        function watchAd() {
+            energyModal.classList.remove('visible');
+            openAdInNewTab();
+        }
+
+        function openAdInNewTab() {
+            const adWindow = window.open('reklamizlendi.html', '_blank');
+            if (adWindow) {
+                setTimeout(() => {
+                    adWindow.close();
+                    restoreEnergyAndContinue();
+                }, 3000);
+            } else {
+                alert('Reklam açılamadı! Lütfen pop-up engelleyicinizi kapatın.');
+                energyModal.classList.add('visible');
+            }
+        }
+
+        function restoreEnergyAndContinue() {
+            energy = ENERGY_MAX;
+            energyCheckMultiplier++;
+            saveEnergy();
+            updateEnergyBar();
+            energyTimeoutActive = false;
+            resumeTimer();
+            
+            showModal(t('energy_refilled'), t('ad_complete'), t('confirm'), () => {
+                hideModal();
+            });
+        }
+
+        function closeAd() {
+            adModal.classList.remove('visible');
+            resumeTimer();
+        }
+
+        function resumeTimer() {
+            clearInterval(timerInterval);
+            runTimer();
+        }
+
+        // Modal fonksiyonları
+        function showModal(title, content, buttonText, buttonCallback) {
+            const modalContainer = document.createElement('div');
+            modalContainer.className = 'modal visible';
+            modalContainer.innerHTML = `
+                <div class="modal-content">
+                    <h2>${title}</h2>
+                    <div class="intro-text">${content}</div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn">${buttonText}</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modalContainer);
+            
+            modalContainer.querySelector('.modal-btn').addEventListener('click', () => {
+                if (buttonCallback) buttonCallback();
+                modalContainer.remove();
+            });
+        }
+
+        function hideModal() {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (modal.id !== 'start-modal' && modal.id !== 'complete-modal') {
+                    modal.classList.remove('visible');
+                }
+            });
+        }
+
+        // Yeniden başlat modalını göster
+        function showRestartModal() {
+            document.getElementById('restart-title').textContent = t('restart_title');
+            document.getElementById('restart-message').textContent = t('restart_message');
+            confirmRestartBtn.textContent = t('yes');
+            cancelRestartBtn.textContent = t('no');
+            restartModal.classList.add('visible');
+        }
+
+        // Bölümler modalını göster
+        function showLevelsModal() {
+            levelsModalTitle.textContent = t('select_level');
+            levelsCloseBtn.textContent = t('close');
+            
+            levelsGrid.innerHTML = '';
+            for (let i = 1; i <= TOTAL_LEVELS; i++) {
+                const button = document.createElement('button');
+                button.className = 'level-select-btn';
+                button.textContent = i;
+                button.dataset.level = i;
+                
+                if (i === currentLevel) {
+                    button.classList.add('active');
+                }
+                
+                if (i > unlockedLevel) {
+                    button.classList.add('locked');
+                    button.disabled = true;
+                }
+                
+                button.addEventListener('click', () => {
+                    if (i <= unlockedLevel) {
+                        levelsModal.classList.remove('visible');
+                        startGame(i);
+                    }
+                });
+                
+                levelsGrid.appendChild(button);
+            }
+            
+            levelsModal.classList.add('visible');
+        }
+
+        // Skorlar modalını göster
+        function showScoresModal() {
+            scoresModalTitle.textContent = t('scores');
+            scoresCloseBtn.textContent = t('close');
+            updateScoreList();
+            scoresModal.classList.add('visible');
+        }
+
+        // Arayüzü güncelle
+        function updateUI() {
+            document.getElementById('game-title').textContent = t('game_title');
+            document.getElementById('start-title').textContent = t('start_title');
+            document.getElementById('start-description').textContent = t('start_description');
+            document.getElementById('start-game-btn').textContent = t('start_game');
+            document.getElementById('complete-title').textContent = t('complete_title');
+            document.getElementById('next-level-btn').textContent = t('next_level');
+            document.getElementById('restart-level-btn').textContent = t('restart_level');
+            document.getElementById('language-title').textContent = t('select_language');
+            document.getElementById('language-confirm').textContent = t('confirm');
+            
+            updateGameInfo();
+            updateBestTime();
+            updateScoreList();
+            updateButtonTitles();
+            updateEnergyBar();
+        }
+
+        // Ses kontrolü
+        function playSound(audio) {
+            if (soundOn) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log("Ses çalınamadı: ", e));
+            }
+        }
+
+        soundToggle.addEventListener('click', () => {
+            soundOn = !soundOn;
+            soundToggle.classList.toggle('active', soundOn);
+            soundToggle.innerHTML = soundOn ? '🔊' : '🔇';
+            localStorage.setItem('memorySoundOn', JSON.stringify(soundOn));
+            updateButtonTitles();
+        });
+
+        // Tema kontrolü
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            themeToggle.innerHTML = isDarkMode ? '☀️' : '🌙';
+            localStorage.setItem('memoryTheme', isDarkMode ? 'dark' : 'light');
+            updateButtonTitles();
+        });
+
+        // Dil seçimi
+        function showLanguageModal() {
+            const languageGrid = document.getElementById('language-grid');
+            languageGrid.innerHTML = '';
+            
+            const languages = [
+                { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+                { code: 'en', name: 'English', flag: '🇺🇸' },
+                { code: 'zh', name: '中文 (简体)', flag: '🇨🇳' },
+                { code: 'es', name: 'Español', flag: '🇪🇸' },
+                { code: 'fr', name: 'Français', flag: '🇫🇷' },
+                { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+                { code: 'ja', name: '日本語', flag: '🇯🇵' },
+                { code: 'ko', name: '한국어', flag: '🇰🇷' },
+                { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+                { code: 'pt', name: 'Português', flag: '🇵🇹' },
+                { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+                { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+                { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+                { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+                { code: 'th', name: 'ไทย', flag: '🇹🇭' },
+                { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+                { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+                { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+                { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+                { code: 'uk', name: 'Українська', flag: '🇺🇦' }
+            ];
+            
+            languages.forEach(lang => {
+                const option = document.createElement('div');
+                option.className = `language-option ${lang.code === currentLanguage ? 'selected' : ''}`;
+                option.innerHTML = `${lang.flag} ${lang.name}`;
+                option.dataset.lang = lang.code;
+                option.addEventListener('click', () => {
+                    currentLanguage = lang.code;
+                    localStorage.setItem('memoryLanguage', currentLanguage);
+                    updateUI();
+                    document.querySelectorAll('.language-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    option.classList.add('selected');
+                });
+                languageGrid.appendChild(option);
+            });
+            
+            languageModal.classList.add('visible');
+        }
+
+        languageToggle.addEventListener('click', showLanguageModal);
+
+        languageConfirm.addEventListener('click', () => {
+            languageModal.classList.remove('visible');
+        });
+
+        // Bölümler butonu
+        levelsBtn.addEventListener('click', showLevelsModal);
+
+        levelsCloseBtn.addEventListener('click', () => {
+            levelsModal.classList.remove('visible');
+        });
+
+        // Skorlar butonu
+        scoresBtn.addEventListener('click', showScoresModal);
+
+        scoresCloseBtn.addEventListener('click', () => {
+            scoresModal.classList.remove('visible');
+        });
+
+        // Enerji butonları
+        useEnergyBtn.addEventListener('click', useEnergy);
+        watchAdBtn.addEventListener('click', watchAd);
+        cancelEnergyBtn.addEventListener('click', () => {
+            energyModal.classList.remove('visible');
             startGame(currentLevel);
-          },
-          t('back'),
-          () => {
-            hideModal();
-            setTimeout(showOutOfEnergyModal, 10);
-          }
-        );
-      }, 10);
-    }
-  );
-}
+        });
+        closeAdBtn.addEventListener('click', closeAd);
 
-// YENİ: Yeni sekmede reklam açma fonksiyonu
-function openAdInNewTab() {
-  // Yeni sekme açma
-  const adWindow = window.open('reklamizlendi.html', '_blank');
-  
-  if (adWindow) {
-    // 3 saniye sonra pencereyi kapat ve enerjiyi doldur
-    setTimeout(() => {
-      adWindow.close();
-      restoreEnergyAndContinue(true);
-      
-      // Başarı mesajı göster
-      showModal(
-        "🎉 " + t('watch_ad'),
-        t('energy_full'),
-        t('confirm'),
-        () => { 
-          hideModal();
-          // Enerji doldurulduktan sonra oyuna devam et
-          energyCheckMultiplier++;
-          resumeTimer();
-        },
-        null,
-        null
-      );
-    }, 3000);
-  } else {
-    // Pencere açılamazsa alternatif göster
-    showModal(
-      "⚠️ Reklam Açılamadı",
-      "Tarayıcınız yeni sekme açmayı engelliyor. Lütfen pop-up engelleyicinizi kapatıp tekrar deneyin.",
-      t('confirm'),
-      () => { hideModal(); },
-      null,
-      null
-    );
-  }
-}
+        // Yeniden başlat butonları
+        confirmRestartBtn.addEventListener('click', () => {
+            restartModal.classList.remove('visible');
+            startGame(currentLevel);
+        });
 
-function restoreEnergyAndContinue(showText) {
-  energy = ENERGY_MAX;
-  saveEnergy();
-  if (showText) {
-    window.energyFullActive = true;
-    updateEnergyBar();
-    if (window.energyFullTimeout) clearTimeout(window.energyFullTimeout);
-    window.energyFullTimeout = setTimeout(() => {
-      window.energyFullActive = false;
-      updateEnergyBar();
-    }, 5000);
-  } else {
-    updateEnergyBar();
-  }
-}
+        cancelRestartBtn.addEventListener('click', () => {
+            restartModal.classList.remove('visible');
+        });
 
-function resumeTimer() {
-  clearInterval(timerInterval);
-  runTimer();
-}
+        // Yeniden başlat
+        restartBtn.addEventListener('click', showRestartModal);
 
-// --- OYUNU BAŞLATMA ---
-document.addEventListener('DOMContentLoaded', () => {
-  const savedTheme = localStorage.getItem('memoryGameTheme') || 'light';
-  applyTheme(savedTheme);
-  updateSoundButton();
+        // Oyunu başlat
+        startGameBtn.addEventListener('click', () => {
+            startModal.classList.remove('visible');
+            startGame(currentLevel);
+        });
 
-  unlockedLevel = parseInt(localStorage.getItem('memoryGameUnlockedLevel') || '1', 10);
-  if (isNaN(unlockedLevel) || unlockedLevel < 1) unlockedLevel = 1;
+        // Sonraki seviye
+        nextLevelBtn.addEventListener('click', () => {
+            completeModal.classList.remove('visible');
+            if (currentLevel < TOTAL_LEVELS) {
+                if (unlockedLevel < currentLevel + 1) {
+                    unlockedLevel = currentLevel + 1;
+                    localStorage.setItem('memoryUnlockedLevel', unlockedLevel);
+                }
+                startGame(currentLevel + 1);
+            } else {
+                startGame(1);
+            }
+        });
 
-  setupToggles();
-  renderLevelButtons();
-  updateScoreHistory();
+        // Aynı seviyeyi tekrar oyna
+        restartLevelBtn.addEventListener('click', () => {
+            completeModal.classList.remove('visible');
+            startGame(currentLevel);
+        });
 
-  languageToggle.onclick = showLanguageModal;
+        // Skor listesini güncelle
+        function updateScoreList() {
+            let html = `<div style="font-weight: bold; margin-bottom: 10px;">${t('level_scores')}</div>`;
+            
+            for (let i = 1; i <= unlockedLevel; i++) {
+                const bestTime = bestTimes[i] || '-';
+                const bestMove = bestMoves[i] || '-';
+                
+                html += `
+                    <div class="score-item">
+                        <span>${t('level')} ${i}:</span>
+                        <span>${bestTime} ${t('time_unit')} / ${bestMove} ${t('moves_unit')}</span>
+                    </div>
+                `;
+            }
+            
+            scoreList.innerHTML = html;
+        }
 
-  updateLanguage();
+        // Buton başlıklarını güncelle
+        function updateButtonTitles() {
+            soundToggle.title = soundOn ? t('sound_off') : t('sound_on');
+            themeToggle.title = document.body.classList.contains('dark-mode') ? t('light_theme') : t('dark_theme');
+            languageToggle.title = t('select_language');
+            levelsBtn.title = t('select_level');
+            scoresBtn.title = t('scores');
+            restartBtn.title = t('restart_level');
+        }
 
-  const startModal = document.getElementById('start-modal');
-  const startGameBtn = document.getElementById('start-game-btn');
+        // Oyun bilgilerini güncelle
+        function updateGameInfo() {
+            timerSpan.textContent = t('time', timer);
+            movesSpan.textContent = t('moves', moves);
+            const best = bestTimes[currentLevel];
+            bestSpan.textContent = t('best', best ? best + ' ' + t('best_time_unit') : '-');
+        }
 
-  startGameBtn.onclick = () => {
-    startModal.classList.remove('visible');
-    startGame(1);
-  };
-});
-</script>
+        // En iyi skoru güncelle
+        function updateBestTime() {
+            const best = bestTimes[currentLevel];
+            bestSpan.textContent = t('best', best ? best + ' ' + t('best_time_unit') : '-');
+        }
+
+        // Oyunu başlat
+        function startGame(level) {
+            currentLevel = level;
+            energyTimeoutActive = false;
+            resetGame();
+            createBoard();
+            
+            if (currentLevel >= ENERGY_START_LEVEL) {
+                loadEnergy(currentLevel);
+            } else {
+                energyBar.style.display = 'none';
+            }
+            
+            const allCards = document.querySelectorAll('.card');
+            allCards.forEach(card => {
+                card.classList.add('flipped');
+            });
+            
+            setTimeout(() => {
+                allCards.forEach(card => {
+                    card.classList.remove('flipped');
+                });
+                lockBoard = false;
+                startTimer();
+            }, SHOW_CARDS_TIME);
+            
+            updateBestTime();
+            updateScoreList();
+            messageDiv.textContent = '';
+        }
+
+        // Oyunu sıfırla
+        function resetGame() {
+            clearInterval(timerInterval);
+            isPaused = false;
+            timer = 0;
+            moves = 0;
+            energyCheckMultiplier = 1;
+            updateGameInfo();
+            firstCard = null;
+            secondCard = null;
+            lockBoard = true;
+            matchedPairs = 0;
+            gameBoard.innerHTML = '';
+        }
+
+        // Oyun tahtasını oluştur
+        function createBoard() {
+            const pairs = CARDS_PER_LEVEL + (currentLevel - 1);
+            const totalCards = pairs * 2;
+            const gridCols = Math.ceil(Math.sqrt(totalCards));
+            const gridRows = Math.ceil(totalCards / gridCols);
+            
+            const selectedEmojis = emojis.slice(0, pairs);
+            const cardValues = [...selectedEmojis, ...selectedEmojis];
+            shuffleArray(cardValues);
+            
+            gameBoard.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
+            gameBoard.style.gridTemplateRows = `repeat(${gridRows}, 1fr)`;
+            
+            cardValues.forEach(emoji => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.dataset.value = emoji;
+                card.innerHTML = `<div class="card-content">${emoji}</div>`;
+                card.addEventListener('click', flipCard);
+                gameBoard.appendChild(card);
+            });
+        }
+
+        // Kart çevirme
+        function flipCard() {
+            if (lockBoard || isPaused || energyTimeoutActive) return;
+            if (this === firstCard) return;
+            
+            this.classList.add('flipped');
+            playSound(flipSound);
+            
+            if (!firstCard) {
+                firstCard = this;
+                return;
+            }
+            
+            secondCard = this;
+            moves++;
+            movesSpan.textContent = t('moves', moves);
+            lockBoard = true;
+            
+            checkForMatch();
+        }
+
+        // Eşleşme kontrolü
+        function checkForMatch() {
+            const isMatch = firstCard.dataset.value === secondCard.dataset.value;
+            
+            if (isMatch) {
+                disableCards();
+                playSound(matchSound);
+            } else {
+				playSound(wrongSound); // Yanlış eşleşme sesi eklendi
+                unflipCards();
+            }
+        }
+
+        // Eşleşen kartları devre dışı bırak
+        function disableCards() {
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            
+            matchedPairs++;
+            
+            const totalPairsNeeded = CARDS_PER_LEVEL + (currentLevel - 1);
+            if (matchedPairs === totalPairsNeeded) {
+                clearInterval(timerInterval);
+                setTimeout(showLevelComplete, 500);
+                saveBestScores();
+            }
+            
+            resetBoard();
+        }
+
+        // Eşleşmeyen kartları geri çevir
+        function unflipCards() {
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000);
+        }
+
+        // Tahtayı sıfırla
+        function resetBoard() {
+            [firstCard, secondCard, lockBoard] = [null, null, false];
+        }
+
+        // Zamanlayıcıyı başlat
+        function startTimer() {
+            clearInterval(timerInterval);
+            timer = 0;
+            updateGameInfo();
+            runTimer();
+        }
+
+        function runTimer() {
+            timerInterval = setInterval(() => {
+                timer++;
+                updateGameInfo();
+                checkEnergyTimeout();
+            }, 1000);
+        }
+
+        // En iyi skorları kaydet
+        function saveBestScores() {
+            if (!bestTimes[currentLevel] || timer < bestTimes[currentLevel]) {
+                bestTimes[currentLevel] = timer;
+                localStorage.setItem('memoryBestTimes', JSON.stringify(bestTimes));
+            }
+            
+            if (!bestMoves[currentLevel] || moves < bestMoves[currentLevel]) {
+                bestMoves[currentLevel] = moves;
+                localStorage.setItem('memoryBestMoves', JSON.stringify(bestMoves));
+            }
+        }
+
+        // Seviye tamamlandı mesajını göster
+        function showLevelComplete() {
+            playSound(completeSound);
+            
+            document.getElementById('complete-title').textContent = t('complete_title');
+            document.getElementById('complete-message').innerHTML = `
+                <p>${t('level_complete', currentLevel)}</p>
+                <p>${t('time_taken', timer, moves)}</p>
+            `;
+            
+            if (currentLevel < TOTAL_LEVELS) {
+                nextLevelBtn.textContent = t('next_level');
+                nextLevelBtn.style.display = 'block';
+            } else {
+                nextLevelBtn.textContent = t('restart_level');
+                nextLevelBtn.style.display = 'block';
+            }
+            
+            restartLevelBtn.textContent = t('restart_level');
+            
+            completeModal.classList.add('visible');
+            
+            updateScoreList();
+        }
+
+        // Yardımcı fonksiyon: Diziyi karıştır
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('memoryTheme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = '☀️';
+            }
+            
+            const savedSound = JSON.parse(localStorage.getItem('memorySoundOn') || 'true');
+            soundOn = savedSound;
+            soundToggle.classList.toggle('active', soundOn);
+            soundToggle.innerHTML = soundOn ? '🔊' : '🔇';
+            
+            unlockedLevel = parseInt(localStorage.getItem('memoryUnlockedLevel') || '1', 10);
+            
+            updateScoreList();
+            updateUI();
+            updateButtonTitles();
+        });
+    </script>
 </body>
 </html>
