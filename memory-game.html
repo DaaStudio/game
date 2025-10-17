@@ -808,7 +808,7 @@
             },
             it: {
                 game_title: "Gioco di Memoria", levels: "Livelli", scores: "Punteggi", time: "Tempo: {0} sec", moves: "Mosse: {0}", best: "Migliore: {0}", level_scores: "Punteggi per Livello",
-                start_title: "Gioco di Memoria", start_description: "Prova ad abbinare le carte! Quando il gioco inizia, tutte le carte rimangono aperte per 3 secondi, poi si chiudono e il gioco inizia.", start_game: "Inizia Gioco",
+                start_title: "Gioco di Memoria", start_description: "Prova ad abbinare le carte! Quando il gioco inizia, tutte le carte rimangono aperte per 3 secondes, poi si chiudono e il gioco inizia.", start_game: "Inizia Gioco",
                 complete_title: "Congratulazioni!", level_complete: "🎉 Livello {0} completato!", time_taken: "Tempo: <b>{0} secondi</b><br>Mosse: <b>{1}</b>", next_level: "Prossimo Livello", restart_level: "Gioca di Nuovo",
                 select_language: "Seleziona Lingua", confirm: "OK", restart_confirm: "Sei sicuro di voler riavviare il livello corrente?", yes: "Sì", no: "No", level: "Livello",
                 sound_on: "Audio Attivato", sound_off: "Audio Disattivato", light_theme: "Tema Chiaro", dark_theme: "Tema Scuro", energy: "Energia", energy_low: "Energia Bassa!",
@@ -1060,7 +1060,6 @@
             if (timer >= currentTargetTime) {
                 energyTimeoutActive = true;
                 clearInterval(timerInterval);
-                playSound(warningSound);
                 
                 if (energy > 0) {
                     showEnergyModal();
@@ -1115,16 +1114,55 @@
         }
 
         function openAdInNewTab() {
-            const adWindow = window.open('reklamizlendi.html', '_blank');
+            // Reklam dosyasının var olup olmadığını kontrol et
+            const adUrl = 'reklamizlendi.html';
+            
+            // Eğer reklam dosyası yoksa, simülasyon yap
+            const adWindow = window.open(adUrl, '_blank');
+            
             if (adWindow) {
+                // Reklam penceresi açıldıysa
                 setTimeout(() => {
-                    adWindow.close();
-                    restoreEnergyAndContinue();
+                    try {
+                        adWindow.close();
+                        restoreEnergyAndContinue();
+                    } catch (e) {
+                        // Pencere kapatılamazsa bile enerjiyi geri yükle
+                        restoreEnergyAndContinue();
+                    }
                 }, 3000);
             } else {
-                alert('Reklam açılamadı! Lütfen pop-up engelleyicinizi kapatın.');
-                energyModal.classList.add('visible');
+                // Reklam penceresi açılamazsa, simülasyon yap
+                simulateAd();
             }
+        }
+
+        function simulateAd() {
+            // Reklam modalını göster
+            adModal.classList.add('visible');
+            
+            let countdown = 3;
+            const countdownElement = document.getElementById('ad-countdown');
+            countdownElement.textContent = countdown;
+            
+            closeAdBtn.disabled = true;
+            
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    closeAdBtn.disabled = false;
+                    closeAdBtn.textContent = t('close');
+                    
+                    // Kapat butonuna tıklanınca enerjiyi geri yükle
+                    closeAdBtn.onclick = () => {
+                        adModal.classList.remove('visible');
+                        restoreEnergyAndContinue();
+                    };
+                }
+            }, 1000);
         }
 
         function restoreEnergyAndContinue() {
